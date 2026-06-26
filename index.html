@@ -342,7 +342,6 @@
     0%,100%{ transform: scale(1.05) translate(0,0); }
     50%{ transform: scale(1.12) translate(-1.5%, 1.5%); }
   }
-  /* caustic light blobs, like sunlight through water */
   .anime-card .caustic{
     position:absolute; inset:0; pointer-events:none; mix-blend-mode: screen; opacity:.35;
     background:
@@ -356,7 +355,6 @@
     33%{ transform: translate(3%, -4%) scale(1.08); }
     66%{ transform: translate(-3%, 3%) scale(0.96); }
   }
-  /* gentle wavy distortion line sweeping over the card */
   .anime-card .ripple{
     position:absolute; left:0; right:0; height:60%; bottom:-10%;
     background: repeating-linear-gradient(0deg, rgba(255,255,255,0.05) 0px, rgba(255,255,255,0.05) 2px, transparent 2px, transparent 6px);
@@ -373,7 +371,6 @@
     position:absolute; inset:0; pointer-events:none;
     background: linear-gradient(180deg, rgba(6,12,30,0.15) 0%, rgba(6,12,30,0.75) 100%), radial-gradient(circle at 50% 100%, transparent 30%, rgba(6,12,30,.5) 100%);
   }
-  /* rising bubbles inside each card */
   .anime-card .abubble{
     position:absolute; bottom:-10%; border-radius:50%;
     background: rgba(255,255,255,0.18); border:1px solid rgba(255,255,255,0.25);
@@ -422,7 +419,7 @@
   .anime-card:hover{ transform: scale(1.012); z-index:2; }
   @media (max-width: 900px){ .anime-grid{ grid-template-columns: 1fr; } .anime-card{ min-height:220px; } }
 
-  /* ===== ABOUT PAGE — a dossier pulled out of the water ===== */
+  /* ===== ABOUT PAGE ===== */
   .about-top{ display:flex; gap:40px; flex-wrap:wrap; margin-bottom:46px; }
   .about-id{
     width:230px; flex-shrink:0; border:1px solid var(--line); background: var(--panel);
@@ -503,7 +500,7 @@
     font-size:18px; line-height:1.7; color:#dfe6f7; margin-bottom:40px;
   }
 
-  /* ===== CONTACT PAGE — message in a bottle / transmission console ===== */
+  /* ===== CONTACT PAGE ===== */
   .contact-wrap{ position:relative; max-width:920px; }
   .contact-intro{
     font-family: Georgia, serif; font-style:italic; font-size:20px; color:#dfe6f7;
@@ -571,7 +568,6 @@
   .contact-row:hover .static-glitch{ opacity:.8; animation: flicker .6s steps(2) infinite; }
   @keyframes flicker{ 0%,100%{ opacity:.8; } 50%{ opacity:.2; } }
 
-  /* hand-stamped postmark for the email row */
   .stamp{
     position:absolute; right:10px; top:14px;
     width:64px; height:64px; border:2px dashed var(--accent);
@@ -607,7 +603,9 @@
     nav{ padding:16px 20px; }
     main, .rooms-section, .facts-section, .page{ padding-left:20px; padding-right:20px; }
     .art-grid, .game-grid, .anime-grid{ grid-template-columns: repeat(2,1fr); }
-  }  /* ===== LIGHTBOX ===== */
+  }
+
+  /* ===== LIGHTBOX ===== */
   .lightbox{
     position:fixed; inset:0; z-index:100; background: rgba(3,6,16,0.92);
     display:none; align-items:center; justify-content:center; padding:60px 30px;
@@ -828,13 +826,13 @@
     <h2>music<span style="color:var(--accent)">*</span></h2>
     <span class="sub">/music — 2025 in review</span>
   </div>
-  <p class="music-intro">here's my stats for that year. top 6 up front, the rest of the damage below. anything underlined plays — assuming the file actually exists somewhere in the repo.</p>
+  <p class="music-intro">here's my stats for that year. top 6 up front, the rest of the damage below. anything underlined plays — assuming the file actually exists in the same folder.</p>
 
   <div class="top-artists" id="topArtists"></div>
 
   <div class="stats-banner">
     <span><span class="yr">2025</span> in review</span>
-    <span id="resolverStatus">scanning repo for media files...</span>
+    <span id="resolverStatus">drop media files alongside index.html — they'll load automatically</span>
   </div>
 
   <div class="stats-grid">
@@ -868,7 +866,7 @@
     <div id="analysisRows"></div>
   </div>
 
-  <p class="file-note">tracks &amp; covers load straight from this github repo — drop a file named like <code>placeholder_track_1.mp3</code> or <code>surf_curse.jpg</code> anywhere in any folder and it'll get found and matched up automatically.</p>
+  <p class="file-note">tracks &amp; covers load straight from the same folder as index.html — drop a file named like <code>placeholder_track_1.mp3</code> or <code>surf_curse.jpg</code> next to it and it'll be found and matched automatically.</p>
 </section>
 
 <div class="now-playing-bar" id="npBar">
@@ -1070,7 +1068,7 @@
   }
   setInterval(tick, 1000); tick();
 
-  /* nervous boxes: shake on hover, settle when you leave */
+  /* nervous boxes */
   document.querySelectorAll('.box.jittery').forEach(box=>{
     let relaxTimeout = null;
     box.addEventListener('mouseenter', ()=>{
@@ -1103,7 +1101,7 @@
     bubbleField.appendChild(b);
   }
 
-  /* depth gauge — fills with scroll position, shown only after a little scrolling */
+  /* depth gauge */
   const depthGauge = document.getElementById('depthGauge');
   const depthFill = document.getElementById('depthFill');
   const depthMarker = document.getElementById('depthMarker');
@@ -1118,7 +1116,7 @@
   window.addEventListener('scroll', updateDepth, { passive:true });
   updateDepth();
 
-  /* click ripple — a little pebble-drop effect anywhere on the page */
+  /* click ripple */
   document.addEventListener('click', (e)=>{
     const r = document.createElement('div');
     r.className = 'click-ripple';
@@ -1128,15 +1126,16 @@
     setTimeout(()=> r.remove(), 700);
   });
 
-  /* tiny UI click sfx on interactive elements — drop ui_click.mp3 anywhere in the repo */
+  /* ui click sfx — drop ui_click.mp3 in the same folder */
   const UI_CLICK_SELECTOR = 'a, .back-btn, .room, .game-card, .art-card, .anime-card, .artist-card, .contact-row, .lightbox-close, .logo, .stat-list li.playable';
   document.addEventListener('click', (e)=>{
     if(!e.target.closest(UI_CLICK_SELECTOR)) return;
-    const url = resolveAudio('ui_click');
-    if(!url) return;
-    const sfx = new Audio(url);
-    sfx.volume = 0.5;
-    sfx.play().catch(()=>{});
+    probeAudio('ui_click', url=>{
+      if(!url) return;
+      const sfx = new Audio(url);
+      sfx.volume = 0.5;
+      sfx.play().catch(()=>{});
+    });
   });
 
   const history = ['home'];
@@ -1188,196 +1187,128 @@
   ];
   function randPair(){ return palette[Math.floor(Math.random()*palette.length)]; }
 
-  let artCount = 0, artInit = false;
-  function addArtCards(n){
-    const grid = document.getElementById('artGrid');
-    for(let i=0; i<n; i++){
-      artCount++;
-      const thisIdx = artCount;
-      const key = `placeholder_${thisIdx}`;
-      const [g1,g2] = randPair();
-      const card = document.createElement('div');
-      card.className = 'art-card';
-      card.style.setProperty('--g1', g1);
-      card.style.setProperty('--g2', g2);
-      card.innerHTML = `<div class="ph-bg" data-img-key="${key}"></div><div class="ph-label">${key}</div>`;
-      card.addEventListener('click', ()=> openLightbox(key, key));
-      grid.appendChild(card);
-    }
-    if(fileMapReady) applyResolvedMedia();
-  }
-  function initArt(){
-    if(artInit) return;
-    artInit = true;
-    addArtCards(12);
-    const loader = document.getElementById('artLoader');
-    const obs = new IntersectionObserver((entries)=>{
-      entries.forEach(e=>{ if(e.isIntersecting){ addArtCards(8); } });
-    }, { rootMargin: '300px' });
-    obs.observe(loader);
-  }
-
-  const games = [
-    { name:"Minecraft", blurb:"this is not just a game, C418 makes me emotional for no reason.", tag:"COMFORT", key:"minecraft" },
-    { name:"DDLC", blurb:"looks like a dating sim, but it's a beautiful novel. yuri is me, don't ask me to elaborate.", tag:"15h+", key:"ddlc" },
-    { name:"Rust", blurb:"toxic community, it's perfect for trolling.", tag:"PVP", key:"rust" },
-    { name:"Terraria", blurb:"dig forever.", tag:"500h", key:"terraria" },
-    { name:"JJS", blurb:"cause problems with strangers.", tag:"ROBLOX", key:"jjs" },
-    { name:"Combat Warriors", blurb:"cause more problems.", tag:"ROBLOX", key:"combat_warriors" },
-    { name:"Criminality", blurb:"yeah.", tag:"CHAOS", key:"criminality" },
-    { name:"Elden Ring", blurb:"16h boss fights.", tag:"PAIN", key:"elden_ring" }
-  ];
-  let gamingInit = false;
-  function initGaming(){
-    if(gamingInit) return;
-    gamingInit = true;
-    const grid = document.getElementById('gameGrid');
-    games.forEach(g=>{
-      const [g1,g2] = randPair();
-      const card = document.createElement('div');
-      card.className = 'game-card';
-      card.style.setProperty('--g1', g1);
-      card.style.setProperty('--g2', g2);
-      card.innerHTML = `
-        <div class="layer base" data-img-key="${g.key}"></div>
-        <div class="scan"></div>
-        <div class="vign"></div>
-        <span class="tag-corner">${g.tag}</span>
-        <div class="info">
-          <div class="glitch-name">${g.name}</div>
-          <div class="blurb">${g.blurb}</div>
-        </div>
-      `;
-      let hoverInterval = null;
-      card.addEventListener('mouseenter', ()=>{
-        let i = 0;
-        const alts = [randPair(), randPair(), randPair()];
-        hoverInterval = setInterval(()=>{
-          const [a1,a2] = alts[i % alts.length];
-          card.style.setProperty('--g1', a1);
-          card.style.setProperty('--g2', a2);
-          i++;
-        }, 700);
-      });
-      card.addEventListener('mouseleave', ()=>{
-        clearInterval(hoverInterval);
-        card.style.setProperty('--g1', g1);
-        card.style.setProperty('--g2', g2);
-      });
-      card.addEventListener('click', ()=> openLightbox(g.key, g.name));
-      grid.appendChild(card);
-    });
-    if(fileMapReady) applyResolvedMedia();
-  }
-
   /* ============================================================
-     GITHUB REPO CONFIG
-     Set these to match your repo so the page can scan every
-     folder and find media files by filename, wherever they live.
+     FLAT FOLDER MEDIA RESOLVER
+     All media files live in the same folder as index.html.
+     Name them to match the keys used in the data below, e.g.:
+       surf_curse.jpg, placeholder_track_1.mp3, minecraft.png
+     The resolver probes with HEAD requests and caches results,
+     so each filename is only checked once per page load.
+     No config, no GitHub token, no build step needed.
   ============================================================ */
-  const GITHUB_OWNER  = "YOUR-GITHUB-USERNAME";
-  const GITHUB_REPO   = "YOUR-REPO-NAME";
-  const GITHUB_BRANCH = "main";
 
-  // filename (lowercased, no path) -> raw.githubusercontent.com URL
-  let fileMap = {};
-  let fileMapReady = false;
+  const _probeCache = {};
 
-  async function buildFileMap(){
-    const statusEl = document.getElementById('resolverStatus');
-    try{
-      const treeUrl = `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/git/trees/${GITHUB_BRANCH}?recursive=1`;
-      const res = await fetch(treeUrl);
-      if(!res.ok) throw new Error('repo not reachable');
-      const data = await res.json();
-      (data.tree || []).forEach(item=>{
-        if(item.type === 'blob'){
-          const base = item.path.split('/').pop().toLowerCase();
-          fileMap[base] = `https://raw.githubusercontent.com/${GITHUB_OWNER}/${GITHUB_REPO}/${GITHUB_BRANCH}/${item.path}`;
+  /* Probe a list of filename candidates with HEAD requests.
+     Calls callback(url) on first hit, callback(null) if none exist. */
+  function _probeList(candidates, callback){
+    let i = 0;
+    function tryNext(){
+      if(i >= candidates.length){ callback(null); return; }
+      const url = candidates[i++];
+      if(_probeCache[url] !== undefined){
+        if(_probeCache[url]) callback(url);
+        else tryNext();
+        return;
+      }
+      fetch(url, { method:'HEAD' })
+        .then(r=>{ _probeCache[url] = r.ok; if(r.ok) callback(url); else tryNext(); })
+        .catch(()=>{ _probeCache[url] = false; tryNext(); });
+    }
+    tryNext();
+  }
+
+  function probeAudio(basename, callback){
+    _probeList(
+      ['mp3','wav','ogg','m4a'].map(e => basename.toLowerCase()+'.'+e),
+      callback
+    );
+  }
+
+  function probeImage(basename, callback){
+    _probeList(
+      ['jpg','jpeg','png','webp','gif'].map(e => basename.toLowerCase()+'.'+e),
+      callback
+    );
+  }
+
+  function probeVideo(basename, callback){
+    _probeList(
+      ['mp4','webm','mov'].map(e => basename.toLowerCase()+'.'+e),
+      callback
+    );
+  }
+
+  /* Tries image first, then video. callback({url, type}) or callback(null). */
+  function probeMedia(basename, callback){
+    probeImage(basename, imgUrl=>{
+      if(imgUrl){ callback({ url: imgUrl, type:'image' }); return; }
+      probeVideo(basename, vidUrl=>{
+        if(vidUrl){ callback({ url: vidUrl, type:'video' }); return; }
+        callback(null);
+      });
+    });
+  }
+
+  /* Kick off background probes for every card that has a data-img-key.
+     Cards whose file isn't found just keep their gradient placeholder. */
+  function applyResolvedMedia(){
+    document.querySelectorAll('[data-img-key]').forEach(el=>{
+      probeMedia(el.dataset.imgKey, media=>{
+        if(!media) return;
+        if(media.type === 'image'){
+          el.style.backgroundImage = `url('${media.url}')`;
+          el.style.backgroundSize = 'cover';
+          el.style.backgroundPosition = 'center';
+          el.style.opacity = '1';
+          const fallback = el.querySelector('.id-photo-fallback');
+          if(fallback) fallback.style.display = 'none';
+        } else {
+          el.innerHTML = `<video src="${media.url}" autoplay muted loop playsinline style="width:100%;height:100%;object-fit:cover;display:block;"></video>`;
+          el.style.opacity = '1';
         }
       });
-      fileMapReady = true;
-      if(statusEl) statusEl.textContent = `found ${Object.keys(fileMap).length} files across the repo`;
-    }catch(e){
-      if(statusEl) statusEl.textContent = `couldn't scan repo (set GITHUB_OWNER/GITHUB_REPO in the script) — using placeholders`;
-    }
+    });
+    document.querySelectorAll('[data-audio-key]').forEach(el=>{
+      probeAudio(el.dataset.audioKey, url=>{
+        if(!url) return;
+        el.classList.add('playable');
+        el.dataset.audioUrl = url;
+      });
+    });
+  }
+
+  /* Called once on load — no API needed, just start probing. */
+  function buildFileMap(){
     applyResolvedMedia();
   }
 
-  // try a basename against a few likely extensions
-  function resolveFile(basename, exts){
-    for(const ext of exts){
-      const key = (basename + '.' + ext).toLowerCase();
-      if(fileMap[key]) return fileMap[key];
-    }
-    // also try exact basename already containing an extension
-    const exact = basename.toLowerCase();
-    if(fileMap[exact]) return fileMap[exact];
-    return null;
-  }
-
-  function resolveAudio(basename){ return resolveFile(basename, ['mp3','wav','ogg','m4a']); }
-  function resolveImage(basename){ return resolveFile(basename, ['jpg','jpeg','png','webp','gif']); }
-  function resolveVideo(basename){ return resolveFile(basename, ['mp4','webm','mov']); }
-  // returns {url, type} for whichever media type matches first (image checked first, then video)
-  function resolveMedia(basename){
-    const img = resolveImage(basename);
-    if(img) return { url: img, type: 'image' };
-    const vid = resolveVideo(basename);
-    if(vid) return { url: vid, type: 'video' };
-    return null;
-  }
-
-  function applyResolvedMedia(){
-    // backgrounds for artist/album/anime/game cards if a matching image or video exists
-    document.querySelectorAll('[data-img-key]').forEach(el=>{
-      const media = resolveMedia(el.dataset.imgKey);
-      if(!media) return;
-      el.dataset.resolvedUrl = media.url;
-      el.dataset.resolvedType = media.type;
-      if(media.type === 'image'){
-        el.style.backgroundImage = `url('${media.url}')`;
-        el.style.backgroundSize = 'cover';
-        el.style.backgroundPosition = 'center';
-        el.style.opacity = '1';
-        const fallback = el.querySelector('.id-photo-fallback');
-        if(fallback) fallback.style.display = 'none';
-      } else {
-        // video: lay a <video> element behind/over the placeholder div as a muted looping preview
-        el.innerHTML = `<video src="${media.url}" autoplay muted loop playsinline style="width:100%; height:100%; object-fit:cover; display:block;"></video>`;
-        el.style.opacity = '1';
-      }
-    });
-    // mark playable list items if a matching audio file exists
-    document.querySelectorAll('[data-audio-key]').forEach(el=>{
-      const url = resolveAudio(el.dataset.audioKey);
-      if(url){
-        el.classList.add('playable');
-        el.dataset.audioUrl = url;
-      }
-    });
-  }
-
-  /* ===== LIGHTBOX — full art piece / game image viewer ===== */
+  /* ===== LIGHTBOX ===== */
   const lightbox = document.getElementById('lightbox');
   const lightboxBody = document.getElementById('lightboxBody');
   const lightboxCaption = document.getElementById('lightboxCaption');
+
   function openLightbox(key, label){
-    const media = resolveMedia(key);
-    let inner;
-    if(media && media.type === 'image'){
-      inner = `<img src="${media.url}" alt="${label}">`;
-    } else if(media && media.type === 'video'){
-      inner = `<video src="${media.url}" controls autoplay playsinline></video>`;
-    } else {
-      const [g1,g2] = randPair();
-      inner = `<div class="lightbox-placeholder" style="background:linear-gradient(150deg, ${g1}, ${g2});"><span>no file found for "${key}" yet</span></div>`;
-    }
-    lightboxBody.innerHTML = inner;
+    /* Show a placeholder immediately while we probe */
+    const [g1,g2] = randPair();
+    lightboxBody.innerHTML = `<div class="lightbox-placeholder" style="background:linear-gradient(150deg,${g1},${g2});"><span>loading...</span></div>`;
     lightboxCaption.textContent = label;
     lightbox.classList.add('show');
     document.body.style.overflow = 'hidden';
+
+    probeMedia(key, media=>{
+      if(!media){
+        lightboxBody.innerHTML = `<div class="lightbox-placeholder" style="background:linear-gradient(150deg,${g1},${g2});"><span>no file found for "${key}" yet</span></div>`;
+        return;
+      }
+      if(media.type === 'image'){
+        lightboxBody.innerHTML = `<img src="${media.url}" alt="${label}">`;
+      } else {
+        lightboxBody.innerHTML = `<video src="${media.url}" controls autoplay playsinline></video>`;
+      }
+    });
   }
+
   function closeLightbox(){
     lightbox.classList.remove('show');
     lightboxBody.innerHTML = '';
@@ -1461,6 +1392,88 @@
     { label:"Musical positivity", val:49.33 }
   ];
 
+  let artCount = 0, artInit = false;
+  function addArtCards(n){
+    const grid = document.getElementById('artGrid');
+    for(let i=0; i<n; i++){
+      artCount++;
+      const thisIdx = artCount;
+      const key = `placeholder_${thisIdx}`;
+      const [g1,g2] = randPair();
+      const card = document.createElement('div');
+      card.className = 'art-card';
+      card.style.setProperty('--g1', g1);
+      card.style.setProperty('--g2', g2);
+      card.innerHTML = `<div class="ph-bg" data-img-key="${key}"></div><div class="ph-label">${key}</div>`;
+      card.addEventListener('click', ()=> openLightbox(key, key));
+      grid.appendChild(card);
+    }
+    applyResolvedMedia();
+  }
+  function initArt(){
+    if(artInit) return;
+    artInit = true;
+    addArtCards(12);
+    const loader = document.getElementById('artLoader');
+    const obs = new IntersectionObserver((entries)=>{
+      entries.forEach(e=>{ if(e.isIntersecting){ addArtCards(8); } });
+    }, { rootMargin: '300px' });
+    obs.observe(loader);
+  }
+
+  const games = [
+    { name:"Minecraft", blurb:"this is not just a game, C418 makes me emotional for no reason.", tag:"COMFORT", key:"minecraft" },
+    { name:"DDLC", blurb:"looks like a dating sim, but it's a beautiful novel. yuri is me, don't ask me to elaborate.", tag:"15h+", key:"ddlc" },
+    { name:"Rust", blurb:"toxic community, it's perfect for trolling.", tag:"PVP", key:"rust" },
+    { name:"Terraria", blurb:"dig forever.", tag:"500h", key:"terraria" },
+    { name:"JJS", blurb:"cause problems with strangers.", tag:"ROBLOX", key:"jjs" },
+    { name:"Combat Warriors", blurb:"cause more problems.", tag:"ROBLOX", key:"combat_warriors" },
+    { name:"Criminality", blurb:"yeah.", tag:"CHAOS", key:"criminality" },
+    { name:"Elden Ring", blurb:"16h boss fights.", tag:"PAIN", key:"elden_ring" }
+  ];
+  let gamingInit = false;
+  function initGaming(){
+    if(gamingInit) return;
+    gamingInit = true;
+    const grid = document.getElementById('gameGrid');
+    games.forEach(g=>{
+      const [g1,g2] = randPair();
+      const card = document.createElement('div');
+      card.className = 'game-card';
+      card.style.setProperty('--g1', g1);
+      card.style.setProperty('--g2', g2);
+      card.innerHTML = `
+        <div class="layer base" data-img-key="${g.key}"></div>
+        <div class="scan"></div>
+        <div class="vign"></div>
+        <span class="tag-corner">${g.tag}</span>
+        <div class="info">
+          <div class="glitch-name">${g.name}</div>
+          <div class="blurb">${g.blurb}</div>
+        </div>
+      `;
+      let hoverInterval = null;
+      card.addEventListener('mouseenter', ()=>{
+        let i = 0;
+        const alts = [randPair(), randPair(), randPair()];
+        hoverInterval = setInterval(()=>{
+          const [a1,a2] = alts[i % alts.length];
+          card.style.setProperty('--g1', a1);
+          card.style.setProperty('--g2', a2);
+          i++;
+        }, 700);
+      });
+      card.addEventListener('mouseleave', ()=>{
+        clearInterval(hoverInterval);
+        card.style.setProperty('--g1', g1);
+        card.style.setProperty('--g2', g2);
+      });
+      card.addEventListener('click', ()=> openLightbox(g.key, g.name));
+      grid.appendChild(card);
+    });
+    applyResolvedMedia();
+  }
+
   let musicInit = false;
   function initMusic(){
     if(musicInit) return;
@@ -1484,7 +1497,6 @@
       card.addEventListener('click', ()=> playTrack(card, a.name));
       topGrid.appendChild(card);
     });
-    if(fileMapReady) applyResolvedMedia();
 
     const genreList = document.getElementById('genreList');
     genres.forEach((g,i)=>{ genreList.innerHTML += `<li><span class="dotnum">${i+1}.</span> ${g}</li>`; });
@@ -1524,7 +1536,7 @@
       requestAnimationFrame(()=>{ row.querySelector('.a-bar-fill').style.width = a.val + '%'; });
     });
 
-    buildFileMap();
+    applyResolvedMedia();
   }
 
   const animes = [

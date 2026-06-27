@@ -342,6 +342,7 @@
     0%,100%{ transform: scale(1.05) translate(0,0); }
     50%{ transform: scale(1.12) translate(-1.5%, 1.5%); }
   }
+  /* caustic light blobs, like sunlight through water */
   .anime-card .caustic{
     position:absolute; inset:0; pointer-events:none; mix-blend-mode: screen; opacity:.35;
     background:
@@ -355,6 +356,7 @@
     33%{ transform: translate(3%, -4%) scale(1.08); }
     66%{ transform: translate(-3%, 3%) scale(0.96); }
   }
+  /* gentle wavy distortion line sweeping over the card */
   .anime-card .ripple{
     position:absolute; left:0; right:0; height:60%; bottom:-10%;
     background: repeating-linear-gradient(0deg, rgba(255,255,255,0.05) 0px, rgba(255,255,255,0.05) 2px, transparent 2px, transparent 6px);
@@ -371,6 +373,7 @@
     position:absolute; inset:0; pointer-events:none;
     background: linear-gradient(180deg, rgba(6,12,30,0.15) 0%, rgba(6,12,30,0.75) 100%), radial-gradient(circle at 50% 100%, transparent 30%, rgba(6,12,30,.5) 100%);
   }
+  /* rising bubbles inside each card */
   .anime-card .abubble{
     position:absolute; bottom:-10%; border-radius:50%;
     background: rgba(255,255,255,0.18); border:1px solid rgba(255,255,255,0.25);
@@ -419,7 +422,7 @@
   .anime-card:hover{ transform: scale(1.012); z-index:2; }
   @media (max-width: 900px){ .anime-grid{ grid-template-columns: 1fr; } .anime-card{ min-height:220px; } }
 
-  /* ===== ABOUT PAGE ===== */
+  /* ===== ABOUT PAGE — a dossier pulled out of the water ===== */
   .about-top{ display:flex; gap:40px; flex-wrap:wrap; margin-bottom:46px; }
   .about-id{
     width:230px; flex-shrink:0; border:1px solid var(--line); background: var(--panel);
@@ -500,7 +503,7 @@
     font-size:18px; line-height:1.7; color:#dfe6f7; margin-bottom:40px;
   }
 
-  /* ===== CONTACT PAGE ===== */
+  /* ===== CONTACT PAGE — message in a bottle / transmission console ===== */
   .contact-wrap{ position:relative; max-width:920px; }
   .contact-intro{
     font-family: Georgia, serif; font-style:italic; font-size:20px; color:#dfe6f7;
@@ -568,6 +571,7 @@
   .contact-row:hover .static-glitch{ opacity:.8; animation: flicker .6s steps(2) infinite; }
   @keyframes flicker{ 0%,100%{ opacity:.8; } 50%{ opacity:.2; } }
 
+  /* hand-stamped postmark for the email row */
   .stamp{
     position:absolute; right:10px; top:14px;
     width:64px; height:64px; border:2px dashed var(--accent);
@@ -603,9 +607,7 @@
     nav{ padding:16px 20px; }
     main, .rooms-section, .facts-section, .page{ padding-left:20px; padding-right:20px; }
     .art-grid, .game-grid, .anime-grid{ grid-template-columns: repeat(2,1fr); }
-  }
-
-  /* ===== LIGHTBOX ===== */
+  }  /* ===== LIGHTBOX ===== */
   .lightbox{
     position:fixed; inset:0; z-index:100; background: rgba(3,6,16,0.92);
     display:none; align-items:center; justify-content:center; padding:60px 30px;
@@ -826,13 +828,13 @@
     <h2>music<span style="color:var(--accent)">*</span></h2>
     <span class="sub">/music — 2025 in review</span>
   </div>
-  <p class="music-intro">here's my stats for that year. top 6 up front, the rest of the damage below. anything underlined plays — assuming the file actually exists in the same folder.</p>
+  <p class="music-intro">here's my stats for that year. top 6 up front, the rest of the damage below. anything underlined plays — assuming the file actually exists in the folder.</p>
 
   <div class="top-artists" id="topArtists"></div>
 
   <div class="stats-banner">
     <span><span class="yr">2025</span> in review</span>
-    <span id="resolverStatus">drop media files alongside index.html — they'll load automatically</span>
+    <span id="resolverStatus">media auto-loads from this folder, no setup needed</span>
   </div>
 
   <div class="stats-grid">
@@ -866,7 +868,7 @@
     <div id="analysisRows"></div>
   </div>
 
-  <p class="file-note">tracks &amp; covers load straight from the same folder as index.html — drop a file named like <code>placeholder_track_1.mp3</code> or <code>surf_curse.jpg</code> next to it and it'll be found and matched automatically.</p>
+  <p class="file-note">tracks &amp; covers load straight from this folder — drop a file named like <code>placeholder_track_1.mp3</code> or <code>surf_curse.jpg</code> right next to this html file and it'll get found and matched up automatically.</p>
 </section>
 
 <div class="now-playing-bar" id="npBar">
@@ -1068,7 +1070,7 @@
   }
   setInterval(tick, 1000); tick();
 
-  /* nervous boxes */
+  /* nervous boxes: shake on hover, settle when you leave */
   document.querySelectorAll('.box.jittery').forEach(box=>{
     let relaxTimeout = null;
     box.addEventListener('mouseenter', ()=>{
@@ -1101,7 +1103,7 @@
     bubbleField.appendChild(b);
   }
 
-  /* depth gauge */
+  /* depth gauge — fills with scroll position, shown only after a little scrolling */
   const depthGauge = document.getElementById('depthGauge');
   const depthFill = document.getElementById('depthFill');
   const depthMarker = document.getElementById('depthMarker');
@@ -1116,7 +1118,7 @@
   window.addEventListener('scroll', updateDepth, { passive:true });
   updateDepth();
 
-  /* click ripple */
+  /* click ripple — a little pebble-drop effect anywhere on the page */
   document.addEventListener('click', (e)=>{
     const r = document.createElement('div');
     r.className = 'click-ripple';
@@ -1126,16 +1128,15 @@
     setTimeout(()=> r.remove(), 700);
   });
 
-  /* ui click sfx — drop ui_click.mp3 in the same folder */
+  /* tiny UI click sfx on interactive elements — drop ui_click.mp3 in the same folder as this html file */
   const UI_CLICK_SELECTOR = 'a, .back-btn, .room, .game-card, .art-card, .anime-card, .artist-card, .contact-row, .lightbox-close, .logo, .stat-list li.playable';
-  document.addEventListener('click', (e)=>{
+  document.addEventListener('click', async (e)=>{
     if(!e.target.closest(UI_CLICK_SELECTOR)) return;
-    probeAudio('ui_click', url=>{
-      if(!url) return;
-      const sfx = new Audio(url);
-      sfx.volume = 0.5;
-      sfx.play().catch(()=>{});
-    });
+    const url = await resolveAudio('ui_click');
+    if(!url) return;
+    const sfx = new Audio(url);
+    sfx.volume = 0.5;
+    sfx.play().catch(()=>{});
   });
 
   const history = ['home'];
@@ -1186,211 +1187,6 @@
     ['#5a2f4a','#1a0e16']
   ];
   function randPair(){ return palette[Math.floor(Math.random()*palette.length)]; }
-
-  /* ============================================================
-     FLAT FOLDER MEDIA RESOLVER
-     All media files live in the same folder as index.html.
-     Name them to match the keys used in the data below, e.g.:
-       surf_curse.jpg, placeholder_track_1.mp3, minecraft.png
-     The resolver probes with HEAD requests and caches results,
-     so each filename is only checked once per page load.
-     No config, no GitHub token, no build step needed.
-  ============================================================ */
-
-  const _probeCache = {};
-
-  /* Probe a list of filename candidates with HEAD requests.
-     Calls callback(url) on first hit, callback(null) if none exist. */
-  function _probeList(candidates, callback){
-    let i = 0;
-    function tryNext(){
-      if(i >= candidates.length){ callback(null); return; }
-      const url = candidates[i++];
-      if(_probeCache[url] !== undefined){
-        if(_probeCache[url]) callback(url);
-        else tryNext();
-        return;
-      }
-      fetch(url, { method:'HEAD' })
-        .then(r=>{ _probeCache[url] = r.ok; if(r.ok) callback(url); else tryNext(); })
-        .catch(()=>{ _probeCache[url] = false; tryNext(); });
-    }
-    tryNext();
-  }
-
-  function probeAudio(basename, callback){
-    _probeList(
-      ['mp3','wav','ogg','m4a'].map(e => basename.toLowerCase()+'.'+e),
-      callback
-    );
-  }
-
-  function probeImage(basename, callback){
-    _probeList(
-      ['jpg','jpeg','png','webp','gif'].map(e => basename.toLowerCase()+'.'+e),
-      callback
-    );
-  }
-
-  function probeVideo(basename, callback){
-    _probeList(
-      ['mp4','webm','mov'].map(e => basename.toLowerCase()+'.'+e),
-      callback
-    );
-  }
-
-  /* Tries image first, then video. callback({url, type}) or callback(null). */
-  function probeMedia(basename, callback){
-    probeImage(basename, imgUrl=>{
-      if(imgUrl){ callback({ url: imgUrl, type:'image' }); return; }
-      probeVideo(basename, vidUrl=>{
-        if(vidUrl){ callback({ url: vidUrl, type:'video' }); return; }
-        callback(null);
-      });
-    });
-  }
-
-  /* Kick off background probes for every card that has a data-img-key.
-     Cards whose file isn't found just keep their gradient placeholder. */
-  function applyResolvedMedia(){
-    document.querySelectorAll('[data-img-key]').forEach(el=>{
-      probeMedia(el.dataset.imgKey, media=>{
-        if(!media) return;
-        if(media.type === 'image'){
-          el.style.backgroundImage = `url('${media.url}')`;
-          el.style.backgroundSize = 'cover';
-          el.style.backgroundPosition = 'center';
-          el.style.opacity = '1';
-          const fallback = el.querySelector('.id-photo-fallback');
-          if(fallback) fallback.style.display = 'none';
-        } else {
-          el.innerHTML = `<video src="${media.url}" autoplay muted loop playsinline style="width:100%;height:100%;object-fit:cover;display:block;"></video>`;
-          el.style.opacity = '1';
-        }
-      });
-    });
-    document.querySelectorAll('[data-audio-key]').forEach(el=>{
-      probeAudio(el.dataset.audioKey, url=>{
-        if(!url) return;
-        el.classList.add('playable');
-        el.dataset.audioUrl = url;
-      });
-    });
-  }
-
-  /* Called once on load — no API needed, just start probing. */
-  function buildFileMap(){
-    applyResolvedMedia();
-  }
-
-  /* ===== LIGHTBOX ===== */
-  const lightbox = document.getElementById('lightbox');
-  const lightboxBody = document.getElementById('lightboxBody');
-  const lightboxCaption = document.getElementById('lightboxCaption');
-
-  function openLightbox(key, label){
-    /* Show a placeholder immediately while we probe */
-    const [g1,g2] = randPair();
-    lightboxBody.innerHTML = `<div class="lightbox-placeholder" style="background:linear-gradient(150deg,${g1},${g2});"><span>loading...</span></div>`;
-    lightboxCaption.textContent = label;
-    lightbox.classList.add('show');
-    document.body.style.overflow = 'hidden';
-
-    probeMedia(key, media=>{
-      if(!media){
-        lightboxBody.innerHTML = `<div class="lightbox-placeholder" style="background:linear-gradient(150deg,${g1},${g2});"><span>no file found for "${key}" yet</span></div>`;
-        return;
-      }
-      if(media.type === 'image'){
-        lightboxBody.innerHTML = `<img src="${media.url}" alt="${label}">`;
-      } else {
-        lightboxBody.innerHTML = `<video src="${media.url}" controls autoplay playsinline></video>`;
-      }
-    });
-  }
-
-  function closeLightbox(){
-    lightbox.classList.remove('show');
-    lightboxBody.innerHTML = '';
-    document.body.style.overflow = '';
-  }
-  document.getElementById('lightboxClose').addEventListener('click', closeLightbox);
-  lightbox.addEventListener('click', (e)=>{ if(e.target === lightbox) closeLightbox(); });
-  document.addEventListener('keydown', (e)=>{ if(e.key === 'Escape') closeLightbox(); });
-
-  /* ===== NOW PLAYING BAR ===== */
-  let currentAudio = null;
-  let currentLi = null;
-  const npBar = document.getElementById('npBar');
-  const npTrack = document.getElementById('npTrack');
-  document.getElementById('npClose').addEventListener('click', stopAudio);
-  function stopAudio(){
-    if(currentAudio){ currentAudio.pause(); currentAudio = null; }
-    if(currentLi) currentLi.classList.remove('playing');
-    currentLi = null;
-    npBar.classList.remove('show');
-  }
-  function playTrack(li, label){
-    const url = li.dataset.audioUrl;
-    if(!url) return;
-    if(currentLi === li){ stopAudio(); return; }
-    if(currentAudio){ currentAudio.pause(); }
-    if(currentLi) currentLi.classList.remove('playing');
-    currentAudio = new Audio(url);
-    currentAudio.play().catch(()=>{});
-    currentLi = li;
-    li.classList.add('playing');
-    npTrack.textContent = label;
-    npBar.classList.add('show');
-    currentAudio.addEventListener('ended', stopAudio);
-  }
-
-  /* ===== DATA — 2025 in review ===== */
-  const topArtists = [
-    { name:"Surf Curse", plays:3275, key:"surf_curse" },
-    { name:"Ken Ashcorp", plays:1117, key:"ken_ashcorp" },
-    { name:"C418", plays:762, key:"c418" },
-    { name:"Moxas", plays:515, key:"moxas" },
-    { name:"Sviral.", plays:302, key:"sviral" },
-    { name:"SUICIDAL-IDOL", plays:300, key:"suicidal_idol" }
-  ];
-  const fullArtistPlays = [
-    { name:"Surf Curse", plays:3275 }, { name:"Ken Ashcorp", plays:1117 },
-    { name:"C418", plays:762 }, { name:"Moxas", plays:515 },
-    { name:"Sviral.", plays:302 }, { name:"SUICIDAL-IDOL", plays:300 },
-    { name:"Lily Potter", plays:247 }, { name:"Stuck in the Sound", plays:227 },
-    { name:"Britney Manson", plays:203 }, { name:"Rainbow Kitten Surprise", plays:174 }
-  ];
-  const genres = ["indie","hyperpop","pov: indie","otacore","pixel","meme rap","video game music","phonk","sad rap","cloud rap"];
-  const albums = [
-    { name:"Surf Curse - Freaks", key:"placeholder_album_1" },
-    { name:"C418 - Minecraft - Volume Alpha", key:"placeholder_album_2" },
-    { name:"Ken Ashcorp - Dare You to Love Me", key:"placeholder_album_3" },
-    { name:"Moxas - my bad", key:"placeholder_album_4" },
-    { name:"SUICIDAL-IDOL - ecstacy (slowed)", key:"placeholder_album_5" },
-    { name:"Sviral. - Zelda's Lullaby / Count Me Out (Medley)", key:"placeholder_album_6" },
-    { name:"Lily Potter - The Archive", key:"placeholder_album_7" },
-    { name:"Stuck in the Sound - Pursuit", key:"placeholder_album_8" }
-  ];
-  const tracks = [
-    { name:"Surf Curse - Freaks", key:"placeholder_track_1" },
-    { name:"Ken Ashcorp - Dare You To Love Me", key:"placeholder_track_2" },
-    { name:"Moxas - my bad", key:"placeholder_track_3" },
-    { name:"C418 - Wet Hands", key:"placeholder_track_4" },
-    { name:"SUICIDAL-IDOL - Ecstacy (slowed)", key:"placeholder_track_5" },
-    { name:"Sviral. - Zelda's Lullaby / Count Me Out (Medley)", key:"placeholder_track_6" },
-    { name:"Lily Potter - Oblivion", key:"placeholder_track_7" },
-    { name:"Britney Manson - FASHION - Slow", key:"placeholder_track_8" }
-  ];
-  const countries = ["United States","United Kingdom","Germany","Canada","Japan","France","Russia","Australia"];
-  const analysis = [
-    { label:"Danceability", val:58.18 },
-    { label:"Energy", val:64.08 },
-    { label:"Speechiness", val:9.68 },
-    { label:"Acousticness", val:27.29 },
-    { label:"Instrumentalness", val:16.20 },
-    { label:"Musical positivity", val:49.33 }
-  ];
 
   let artCount = 0, artInit = false;
   function addArtCards(n){
@@ -1474,6 +1270,198 @@
     applyResolvedMedia();
   }
 
+  /* ============================================================
+     LOCAL MEDIA RESOLVER
+     Everything (images, video, audio) lives in the SAME folder as
+     this index.html file. To use a placeholder name like
+     "placeholder_track_1", just drop a file named
+     "placeholder_track_1.mp3" (or .png, .mp4, etc) right next to
+     this html file — no config, no folder structure needed.
+  ============================================================ */
+  const MEDIA_ROOT = './';
+  const resolveCache = {}; // basename(lowercased) -> {url,type}|url|null
+
+  async function fileExists(url){
+    try{
+      const res = await fetch(url, { method:'HEAD', cache:'no-store' });
+      if(res.ok) return true;
+    }catch(e){}
+    try{
+      const res2 = await fetch(url, { cache:'no-store' });
+      return res2.ok;
+    }catch(e){}
+    return false;
+  }
+
+  async function resolveMedia(basename){
+    const cacheKey = 'media:' + basename.toLowerCase();
+    if(resolveCache[cacheKey] !== undefined) return resolveCache[cacheKey];
+    const imgExts = ['jpg','jpeg','png','webp','gif'];
+    const vidExts = ['mp4','webm','mov'];
+    for(const ext of imgExts){
+      const url = MEDIA_ROOT + basename + '.' + ext;
+      if(await fileExists(url)){ resolveCache[cacheKey] = { url, type:'image' }; return resolveCache[cacheKey]; }
+    }
+    for(const ext of vidExts){
+      const url = MEDIA_ROOT + basename + '.' + ext;
+      if(await fileExists(url)){ resolveCache[cacheKey] = { url, type:'video' }; return resolveCache[cacheKey]; }
+    }
+    resolveCache[cacheKey] = null;
+    return null;
+  }
+
+  async function resolveAudio(basename){
+    const cacheKey = 'audio:' + basename.toLowerCase();
+    if(resolveCache[cacheKey] !== undefined) return resolveCache[cacheKey];
+    const exts = ['mp3','wav','ogg','m4a'];
+    for(const ext of exts){
+      const url = MEDIA_ROOT + basename + '.' + ext;
+      if(await fileExists(url)){ resolveCache[cacheKey] = url; return url; }
+    }
+    resolveCache[cacheKey] = null;
+    return null;
+  }
+
+  async function applyResolvedMedia(){
+    // backgrounds for artist/album/anime/game/about cards if a matching image or video exists
+    const imgEls = document.querySelectorAll('[data-img-key]');
+    for(const el of imgEls){
+      if(el.dataset.resolvedUrl) continue;
+      const media = await resolveMedia(el.dataset.imgKey);
+      if(!media) continue;
+      el.dataset.resolvedUrl = media.url;
+      el.dataset.resolvedType = media.type;
+      if(media.type === 'image'){
+        el.style.backgroundImage = `url('${media.url}')`;
+        el.style.backgroundSize = 'cover';
+        el.style.backgroundPosition = 'center';
+        el.style.opacity = '1';
+        const fallback = el.querySelector('.id-photo-fallback');
+        if(fallback) fallback.style.display = 'none';
+      } else {
+        el.innerHTML = `<video src="${media.url}" autoplay muted loop playsinline style="width:100%; height:100%; object-fit:cover; display:block;"></video>`;
+        el.style.opacity = '1';
+      }
+    }
+    // mark playable list items if a matching audio file exists
+    const audioEls = document.querySelectorAll('[data-audio-key]');
+    for(const el of audioEls){
+      if(el.classList.contains('playable')) continue;
+      const url = await resolveAudio(el.dataset.audioKey);
+      if(url){
+        el.classList.add('playable');
+        el.dataset.audioUrl = url;
+      }
+    }
+  }
+
+  /* ===== LIGHTBOX — full art piece / game image viewer ===== */
+  const lightbox = document.getElementById('lightbox');
+  const lightboxBody = document.getElementById('lightboxBody');
+  const lightboxCaption = document.getElementById('lightboxCaption');
+  async function openLightbox(key, label){
+    lightboxBody.innerHTML = `<div class="lightbox-placeholder"><span>loading...</span></div>`;
+    lightboxCaption.textContent = label;
+    lightbox.classList.add('show');
+    document.body.style.overflow = 'hidden';
+    const media = await resolveMedia(key);
+    let inner;
+    if(media && media.type === 'image'){
+      inner = `<img src="${media.url}" alt="${label}">`;
+    } else if(media && media.type === 'video'){
+      inner = `<video src="${media.url}" controls autoplay playsinline></video>`;
+    } else {
+      const [g1,g2] = randPair();
+      inner = `<div class="lightbox-placeholder" style="background:linear-gradient(150deg, ${g1}, ${g2});"><span>no file found for "${key}" yet</span></div>`;
+    }
+    lightboxBody.innerHTML = inner;
+    lightboxCaption.textContent = label;
+    lightbox.classList.add('show');
+    document.body.style.overflow = 'hidden';
+  }
+  function closeLightbox(){
+    lightbox.classList.remove('show');
+    lightboxBody.innerHTML = '';
+    document.body.style.overflow = '';
+  }
+  document.getElementById('lightboxClose').addEventListener('click', closeLightbox);
+  lightbox.addEventListener('click', (e)=>{ if(e.target === lightbox) closeLightbox(); });
+  document.addEventListener('keydown', (e)=>{ if(e.key === 'Escape') closeLightbox(); });
+
+  /* ===== NOW PLAYING BAR ===== */
+  let currentAudio = null;
+  let currentLi = null;
+  const npBar = document.getElementById('npBar');
+  const npTrack = document.getElementById('npTrack');
+  document.getElementById('npClose').addEventListener('click', stopAudio);
+  function stopAudio(){
+    if(currentAudio){ currentAudio.pause(); currentAudio = null; }
+    if(currentLi) currentLi.classList.remove('playing');
+    currentLi = null;
+    npBar.classList.remove('show');
+  }
+  function playTrack(li, label){
+    const url = li.dataset.audioUrl;
+    if(!url) return;
+    if(currentLi === li){ stopAudio(); return; }
+    if(currentAudio){ currentAudio.pause(); }
+    if(currentLi) currentLi.classList.remove('playing');
+    currentAudio = new Audio(url);
+    currentAudio.play().catch(()=>{});
+    currentLi = li;
+    li.classList.add('playing');
+    npTrack.textContent = label;
+    npBar.classList.add('show');
+    currentAudio.addEventListener('ended', stopAudio);
+  }
+
+  /* ===== DATA — 2025 in review ===== */
+  const topArtists = [
+    { name:"Surf Curse", plays:3275, key:"surf_curse" },
+    { name:"Ken Ashcorp", plays:1117, key:"ken_ashcorp" },
+    { name:"C418", plays:762, key:"c418" },
+    { name:"Moxas", plays:515, key:"moxas" },
+    { name:"Sviral.", plays:302, key:"sviral" },
+    { name:"SUICIDAL-IDOL", plays:300, key:"suicidal_idol" }
+  ];
+  const fullArtistPlays = [
+    { name:"Surf Curse", plays:3275 }, { name:"Ken Ashcorp", plays:1117 },
+    { name:"C418", plays:762 }, { name:"Moxas", plays:515 },
+    { name:"Sviral.", plays:302 }, { name:"SUICIDAL-IDOL", plays:300 },
+    { name:"Lily Potter", plays:247 }, { name:"Stuck in the Sound", plays:227 },
+    { name:"Britney Manson", plays:203 }, { name:"Rainbow Kitten Surprise", plays:174 }
+  ];
+  const genres = ["indie","hyperpop","pov: indie","otacore","pixel","meme rap","video game music","phonk","sad rap","cloud rap"];
+  const albums = [
+    { name:"Surf Curse - Freaks", key:"placeholder_album_1" },
+    { name:"C418 - Minecraft - Volume Alpha", key:"placeholder_album_2" },
+    { name:"Ken Ashcorp - Dare You to Love Me", key:"placeholder_album_3" },
+    { name:"Moxas - my bad", key:"placeholder_album_4" },
+    { name:"SUICIDAL-IDOL - ecstacy (slowed)", key:"placeholder_album_5" },
+    { name:"Sviral. - Zelda's Lullaby / Count Me Out (Medley)", key:"placeholder_album_6" },
+    { name:"Lily Potter - The Archive", key:"placeholder_album_7" },
+    { name:"Stuck in the Sound - Pursuit", key:"placeholder_album_8" }
+  ];
+  const tracks = [
+    { name:"Surf Curse - Freaks", key:"placeholder_track_1" },
+    { name:"Ken Ashcorp - Dare You To Love Me", key:"placeholder_track_2" },
+    { name:"Moxas - my bad", key:"placeholder_track_3" },
+    { name:"C418 - Wet Hands", key:"placeholder_track_4" },
+    { name:"SUICIDAL-IDOL - Ecstacy (slowed)", key:"placeholder_track_5" },
+    { name:"Sviral. - Zelda's Lullaby / Count Me Out (Medley)", key:"placeholder_track_6" },
+    { name:"Lily Potter - Oblivion", key:"placeholder_track_7" },
+    { name:"Britney Manson - FASHION - Slow", key:"placeholder_track_8" }
+  ];
+  const countries = ["United States","United Kingdom","Germany","Canada","Japan","France","Russia","Australia"];
+  const analysis = [
+    { label:"Danceability", val:58.18 },
+    { label:"Energy", val:64.08 },
+    { label:"Speechiness", val:9.68 },
+    { label:"Acousticness", val:27.29 },
+    { label:"Instrumentalness", val:16.20 },
+    { label:"Musical positivity", val:49.33 }
+  ];
+
   let musicInit = false;
   function initMusic(){
     if(musicInit) return;
@@ -1497,6 +1485,7 @@
       card.addEventListener('click', ()=> playTrack(card, a.name));
       topGrid.appendChild(card);
     });
+    applyResolvedMedia();
 
     const genreList = document.getElementById('genreList');
     genres.forEach((g,i)=>{ genreList.innerHTML += `<li><span class="dotnum">${i+1}.</span> ${g}</li>`; });
@@ -1589,7 +1578,7 @@
   }
 
   showPage('home');
-  buildFileMap();
+  applyResolvedMedia();
 </script>
 
 </body>

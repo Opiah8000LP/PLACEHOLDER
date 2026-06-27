@@ -1130,12 +1130,12 @@
 
   /* tiny UI click sfx on interactive elements — drop ui_click.mp3 in the same folder as this html file */
   const UI_CLICK_SELECTOR = 'a, .back-btn, .room, .game-card, .art-card, .anime-card, .artist-card, .contact-row, .lightbox-close, .logo, .stat-list li.playable';
-  document.addEventListener('click', async (e)=>{
+  document.addEventListener('mousedown', async (e)=>{
     if(!e.target.closest(UI_CLICK_SELECTOR)) return;
     const url = await resolveAudio('ui_click');
     if(!url) return;
     const sfx = new Audio(url);
-    sfx.volume = 0.5;
+    sfx.volume = 0.22;
     sfx.play().catch(()=>{});
   });
 

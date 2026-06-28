@@ -24,6 +24,61 @@
   ::-webkit-scrollbar-thumb{ background: var(--line); border:2px solid var(--deep); }
   ::-webkit-scrollbar-thumb:hover{ background: var(--accent-dim); }
 
+  .wave-divider{ position:relative; z-index:2; line-height:0; background: var(--navy2); }
+  .wave-divider svg{ width:100%; height:24px; display:block; }
+  .wave-path{ fill: var(--deep); }
+
+  /* ===== LOADING SCREEN — descending into the water ===== */
+  #loadScreen{
+    position:fixed; inset:0; z-index:999; background: radial-gradient(circle at 50% 0%, var(--navy) 0%, var(--deep) 70%);
+    display:flex; align-items:center; justify-content:center; overflow:hidden;
+    transition: opacity .6s ease, visibility .6s ease;
+  }
+  #loadScreen.hidden{ opacity:0; visibility:hidden; pointer-events:none; }
+  #loadScreen .ls-bubbles{ position:absolute; inset:0; pointer-events:none; }
+  #loadScreen .ls-bubble{
+    position:absolute; bottom:-40px; border-radius:50%;
+    background: rgba(232,238,252,0.07); animation: rise linear infinite;
+  }
+  .ls-content{ position:relative; z-index:2; text-align:center; width:320px; }
+  .ls-mark{
+    font-family: Georgia, serif; font-style:italic; font-size:34px; color:#fff; margin-bottom:6px;
+  }
+  .ls-mark .star{ color: var(--accent); display:inline-block; animation: spin 4s linear infinite; }
+  .ls-sub{ font-size:11px; letter-spacing:1.5px; color: var(--foam-dim); margin-bottom:34px; }
+  .ls-sonar{
+    width:80px; height:80px; margin:0 auto 28px; position:relative;
+  }
+  .ls-sonar .ring{
+    position:absolute; inset:0; border:1px solid var(--accent); border-radius:50%;
+    opacity:0; animation: sonarPing 2.2s ease-out infinite;
+  }
+  .ls-sonar .ring:nth-child(2){ animation-delay: .7s; }
+  .ls-sonar .ring:nth-child(3){ animation-delay: 1.4s; }
+  .ls-sonar .dot{
+    position:absolute; top:50%; left:50%; width:8px; height:8px; margin:-4px;
+    border-radius:50%; background: var(--accent); box-shadow: 0 0 12px rgba(255,225,77,.7);
+  }
+  @keyframes sonarPing{
+    0%{ transform: scale(0.2); opacity:.9; }
+    100%{ transform: scale(1.6); opacity:0; }
+  }
+  .ls-bar-track{
+    height:5px; border:1px solid var(--line); background: var(--navy2); position:relative; overflow:hidden; margin-bottom:14px;
+  }
+  .ls-bar-fill{
+    position:absolute; left:0; top:0; bottom:0; width:0%; background: linear-gradient(90deg, var(--accent-dim), var(--accent));
+    transition: width .35s ease;
+  }
+  .ls-status{
+    display:flex; justify-content:space-between; font-size:10px; letter-spacing:1px; color: var(--foam-dim);
+  }
+  .ls-status .ls-pct{ color: var(--accent); }
+  .ls-files{
+    margin-top:18px; font-size:10px; color: var(--foam-dim); opacity:.7; letter-spacing:.5px;
+    height:14px; overflow:hidden; white-space:nowrap;
+  }
+
   .grain{
     position:fixed; inset:0; z-index:1; pointer-events:none; opacity:.05; mix-blend-mode: overlay;
     background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='120' height='120'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%25' height='100%25' filter='url(%23n)' opacity='0.5'/></svg>");
@@ -259,7 +314,7 @@
   .top-artists{ display:grid; grid-template-columns: repeat(6,1fr); gap:16px; margin-bottom:50px; }
   .artist-card{
     border:1px solid var(--line); background: var(--panel); position:relative; overflow:hidden;
-    cursor:pointer; transition: transform .25s ease, border-color .25s ease; aspect-ratio: 3/4;
+    cursor:pointer; transition: transform .25s ease, border-color .25s ease; aspect-ratio: 1/1;
     display:flex; flex-direction:column; justify-content:flex-end;
   }
   .artist-card:hover{ transform: translateY(-5px); border-color: var(--accent); }
@@ -645,6 +700,27 @@
 </style>
 </head>
 <body>
+
+<div id="loadScreen">
+  <div class="ls-bubbles" id="lsBubbles"></div>
+  <div class="ls-content">
+    <div class="ls-mark">LowIndex<span class="star">*</span></div>
+    <div class="ls-sub">DESCENDING</div>
+    <div class="ls-sonar">
+      <div class="ring"></div>
+      <div class="ring"></div>
+      <div class="ring"></div>
+      <div class="dot"></div>
+    </div>
+    <div class="ls-bar-track"><div class="ls-bar-fill" id="lsBarFill"></div></div>
+    <div class="ls-status">
+      <span id="lsCount">0 / 0 files checked</span>
+      <span class="ls-pct" id="lsPct">0%</span>
+    </div>
+    <div class="ls-files" id="lsFiles">scanning the seabed...</div>
+  </div>
+</div>
+
 
 <div class="bubbles" id="bubbles"></div>
 <div class="grain"></div>
@@ -1579,6 +1655,74 @@
 
   showPage('home');
   applyResolvedMedia();
+
+  /* ===== LOADING SCREEN — actually wait for files to be checked ===== */
+  (function runPreload(){
+    const lsBubbles = document.getElementById('lsBubbles');
+    for(let i=0; i<16; i++){
+      const b = document.createElement('div');
+      b.className = 'ls-bubble';
+      const size = 3 + Math.random()*7;
+      b.style.width = size+'px'; b.style.height = size+'px';
+      b.style.left = Math.random()*100+'%';
+      b.style.animationDuration = (5 + Math.random()*9)+'s';
+      b.style.animationDelay = (Math.random()*6)+'s';
+      lsBubbles.appendChild(b);
+    }
+
+    document.body.style.overflow = 'hidden';
+
+    // every basename the site might want, checked up front so it's cached by the time each page renders
+    const preloadKeys = [
+      'aboutme', 'ui_click',
+      ...topArtists.map(a=>a.key),
+      ...albums.map(a=>a.key),
+      ...tracks.map(t=>t.key),
+      ...games.map(g=>g.key),
+      ...animes.map(a=>a.key),
+      ...Array.from({length:12}, (_,i)=> `placeholder_${i+1}`)
+    ];
+
+    const barFill = document.getElementById('lsBarFill');
+    const lsCount = document.getElementById('lsCount');
+    const lsPct = document.getElementById('lsPct');
+    const lsFiles = document.getElementById('lsFiles');
+    const loadScreen = document.getElementById('loadScreen');
+
+    let done = 0;
+    const total = preloadKeys.length;
+
+    function updateProgress(key){
+      done++;
+      const pct = Math.round((done/total)*100);
+      barFill.style.width = pct + '%';
+      lsCount.textContent = `${done} / ${total} files checked`;
+      lsPct.textContent = pct + '%';
+      lsFiles.textContent = `checked: ${key}`;
+    }
+
+    const checks = preloadKeys.map(key=>
+      Promise.race([
+        Promise.all([resolveMedia(key), resolveAudio(key)]),
+        new Promise(res=> setTimeout(res, 2500)) // per-file safety timeout
+      ]).then(()=> updateProgress(key))
+    );
+
+    // overall safety timeout so a slow/unreachable host can't strand someone on the loading screen
+    const safety = new Promise(res=> setTimeout(res, 8000));
+
+    Promise.race([Promise.all(checks), safety]).then(()=>{
+      barFill.style.width = '100%';
+      lsPct.textContent = '100%';
+      lsFiles.textContent = 'surfacing...';
+      setTimeout(()=>{
+        loadScreen.classList.add('hidden');
+        document.body.style.overflow = '';
+        applyResolvedMedia();
+        setTimeout(()=> loadScreen.remove(), 700);
+      }, 350);
+    });
+  })();
 </script>
 
 </body>

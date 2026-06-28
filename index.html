@@ -1316,6 +1316,7 @@
       card.style.setProperty('--g2', g2);
       card.innerHTML = `
         <div class="layer base" data-img-key="${g.key}"></div>
+        <div class="layer hoverlayer"></div>
         <div class="scan"></div>
         <div class="vign"></div>
         <span class="tag-corner">${g.tag}</span>
@@ -1324,23 +1325,54 @@
           <div class="blurb">${g.blurb}</div>
         </div>
       `;
+      const hoverLayer = card.querySelector('.hoverlayer');
+
+      function paintFrame(el, media){
+        if(!media){ return; }
+        if(media.type === 'image'){
+          el.innerHTML = '';
+          el.style.backgroundImage = `url('${media.url}')`;
+          el.style.backgroundSize = 'cover';
+          el.style.backgroundPosition = 'center';
+        } else {
+          el.style.backgroundImage = 'none';
+          el.innerHTML = `<video src="${media.url}" autoplay muted loop playsinline style="width:100%; height:100%; object-fit:cover; display:block;"></video>`;
+        }
+      }
+
       let hoverInterval = null;
-      card.addEventListener('mouseenter', ()=>{
-        let i = 0;
-        const alts = [randPair(), randPair(), randPair()];
-        hoverInterval = setInterval(()=>{
-          const [a1,a2] = alts[i % alts.length];
-          card.style.setProperty('--g1', a1);
-          card.style.setProperty('--g2', a2);
-          i++;
-        }, 700);
+      let colorCycle = null;
+
+      card.addEventListener('mouseenter', async ()=>{
+        const frames = await resolveSequence(g.key);
+        if(frames.length > 0){
+          let i = 0;
+          hoverLayer.style.opacity = '1';
+          paintFrame(hoverLayer, frames[i]);
+          hoverInterval = setInterval(()=>{
+            i = (i+1) % frames.length;
+            paintFrame(hoverLayer, frames[i]);
+          }, 900);
+        } else {
+          // no numbered frames yet — fall back to the little color-cycle effect
+          let i = 0;
+          const alts = [randPair(), randPair(), randPair()];
+          colorCycle = setInterval(()=>{
+            const [a1,a2] = alts[i % alts.length];
+            card.style.setProperty('--g1', a1);
+            card.style.setProperty('--g2', a2);
+            i++;
+          }, 700);
+        }
       });
       card.addEventListener('mouseleave', ()=>{
-        clearInterval(hoverInterval);
+        clearInterval(hoverInterval); hoverInterval = null;
+        clearInterval(colorCycle); colorCycle = null;
+        hoverLayer.style.opacity = '0';
         card.style.setProperty('--g1', g1);
         card.style.setProperty('--g2', g2);
       });
-      card.addEventListener('click', ()=> openLightbox(g.key, g.name));
+      card.addEventListener('click', ()=> openGameLightbox(g));
       grid.appendChild(card);
     });
     applyResolvedMedia();
@@ -1398,6 +1430,21 @@
     return null;
   }
 
+  // finds basekey_1, basekey_2, basekey_3... for as long as they exist (no fixed limit, just a sane safety cap)
+  const sequenceCache = {};
+  async function resolveSequence(baseKey, cap = 50){
+    const cacheKey = baseKey.toLowerCase();
+    if(sequenceCache[cacheKey]) return sequenceCache[cacheKey];
+    const frames = [];
+    for(let i=1; i<=cap; i++){
+      const media = await resolveMedia(`${baseKey}_${i}`);
+      if(!media) break;
+      frames.push(media);
+    }
+    sequenceCache[cacheKey] = frames;
+    return frames;
+  }
+
   async function applyResolvedMedia(){
     // backgrounds for artist/album/anime/game/about cards if a matching image or video exists
     const imgEls = document.querySelectorAll('[data-img-key]');
@@ -1435,27 +1482,54 @@
   const lightbox = document.getElementById('lightbox');
   const lightboxBody = document.getElementById('lightboxBody');
   const lightboxCaption = document.getElementById('lightboxCaption');
+  let lightboxSlideInterval = null;
+
+  function renderLightboxFrame(media, label, key){
+    if(media && media.type === 'image'){
+      lightboxBody.innerHTML = `<img src="${media.url}" alt="${label}">`;
+    } else if(media && media.type === 'video'){
+      lightboxBody.innerHTML = `<video src="${media.url}" autoplay muted loop playsinline></video>`;
+    } else {
+      const [g1,g2] = randPair();
+      lightboxBody.innerHTML = `<div class="lightbox-placeholder" style="background:linear-gradient(150deg, ${g1}, ${g2});"><span>no file found for "${key}" yet</span></div>`;
+    }
+  }
+
   async function openLightbox(key, label){
+    clearInterval(lightboxSlideInterval); lightboxSlideInterval = null;
     lightboxBody.innerHTML = `<div class="lightbox-placeholder"><span>loading...</span></div>`;
     lightboxCaption.textContent = label;
     lightbox.classList.add('show');
     document.body.style.overflow = 'hidden';
     const media = await resolveMedia(key);
-    let inner;
-    if(media && media.type === 'image'){
-      inner = `<img src="${media.url}" alt="${label}">`;
-    } else if(media && media.type === 'video'){
-      inner = `<video src="${media.url}" controls autoplay playsinline></video>`;
-    } else {
-      const [g1,g2] = randPair();
-      inner = `<div class="lightbox-placeholder" style="background:linear-gradient(150deg, ${g1}, ${g2});"><span>no file found for "${key}" yet</span></div>`;
-    }
-    lightboxBody.innerHTML = inner;
-    lightboxCaption.textContent = label;
+    renderLightboxFrame(media, label, key);
+  }
+
+  // opens the lightbox and keeps swiping through gamename_1, gamename_2, ... on a loop, never settling on the static thumbnail
+  async function openGameLightbox(g){
+    clearInterval(lightboxSlideInterval); lightboxSlideInterval = null;
+    lightboxBody.innerHTML = `<div class="lightbox-placeholder"><span>loading...</span></div>`;
+    lightboxCaption.textContent = g.name;
     lightbox.classList.add('show');
     document.body.style.overflow = 'hidden';
+
+    const frames = await resolveSequence(g.key);
+    if(frames.length === 0){
+      // no numbered set exists yet — fall back to just the single base thumbnail, if any
+      const base = await resolveMedia(g.key);
+      renderLightboxFrame(base, g.name, g.key);
+      return;
+    }
+    let i = 0;
+    renderLightboxFrame(frames[i], g.name, g.key);
+    lightboxSlideInterval = setInterval(()=>{
+      i = (i+1) % frames.length;
+      renderLightboxFrame(frames[i], g.name, g.key);
+    }, 1800);
   }
+
   function closeLightbox(){
+    clearInterval(lightboxSlideInterval); lightboxSlideInterval = null;
     lightbox.classList.remove('show');
     lightboxBody.innerHTML = '';
     document.body.style.overflow = '';

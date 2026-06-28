@@ -289,6 +289,9 @@
   .game-card{ position:relative; aspect-ratio: 16/10; overflow:hidden; cursor:pointer; background: linear-gradient(135deg, var(--g1), var(--g2)); }
   .game-card .layer{ position:absolute; inset:0; background: linear-gradient(135deg, var(--g1), var(--g2)); display:flex; align-items:flex-end; opacity:0; transition: opacity .5s ease; }
   .game-card .layer.base{ opacity:1; }
+  .game-card .hoverlayer{ background: none; }
+  .game-card .hf{ position:absolute; inset:0; background-size:cover; background-position:center; opacity:0; transition: opacity 1.4s ease; }
+  .game-card .hf.active{ opacity:1; }
   .game-card .scan{ position:absolute; inset:0; background: repeating-linear-gradient(0deg, rgba(255,255,255,0.04) 0px, rgba(255,255,255,0.04) 1px, transparent 1px, transparent 3px); pointer-events:none; mix-blend-mode: overlay; opacity:.5; }
   .game-card .vign{ position:absolute; inset:0; background: radial-gradient(circle at 50% 110%, rgba(0,0,0,0) 0%, rgba(0,0,0,.65) 100%); pointer-events:none; }
   .game-card .info{ position:relative; z-index:3; padding:16px; }
@@ -676,7 +679,9 @@
   .lightbox-body{
     max-width:100%; max-height:75vh; display:flex; align-items:center; justify-content:center;
     border:1px solid var(--line); background: var(--panel); overflow:hidden;
+    opacity:0; transition: opacity 1.4s ease;
   }
+  .lightbox-body.lb-visible{ opacity:1; }
   .lightbox-body img, .lightbox-body video{
     max-width:100%; max-height:75vh; display:block; object-fit:contain;
   }
@@ -1316,7 +1321,10 @@
       card.style.setProperty('--g2', g2);
       card.innerHTML = `
         <div class="layer base" data-img-key="${g.key}"></div>
-        <div class="layer hoverlayer"></div>
+        <div class="layer hoverlayer">
+          <div class="hf hf-a"></div>
+          <div class="hf hf-b"></div>
+        </div>
         <div class="scan"></div>
         <div class="vign"></div>
         <span class="tag-corner">${g.tag}</span>
@@ -1326,33 +1334,41 @@
         </div>
       `;
       const hoverLayer = card.querySelector('.hoverlayer');
+      const hfA = card.querySelector('.hf-a');
+      const hfB = card.querySelector('.hf-b');
 
       function paintFrame(el, media){
-        if(!media){ return; }
+        if(!media) return;
         if(media.type === 'image'){
-          el.innerHTML = '';
           el.style.backgroundImage = `url('${media.url}')`;
-          el.style.backgroundSize = 'cover';
-          el.style.backgroundPosition = 'center';
         } else {
-          el.style.backgroundImage = 'none';
-          el.innerHTML = `<video src="${media.url}" autoplay muted loop playsinline style="width:100%; height:100%; object-fit:cover; display:block;"></video>`;
+          el.style.backgroundImage = `url('')`;
+          // videos in the crossfade slot just sit as a poster-less still via CSS bg fallback;
+          // actual video playback still happens in the lightbox slideshow
         }
       }
 
       let hoverInterval = null;
       let colorCycle = null;
+      let frontIsA = true;
 
       card.addEventListener('mouseenter', async ()=>{
         const frames = await resolveSequence(g.key);
         if(frames.length > 0){
           let i = 0;
           hoverLayer.style.opacity = '1';
-          paintFrame(hoverLayer, frames[i]);
+          paintFrame(hfA, frames[i]);
+          hfA.classList.add('active');
+          frontIsA = true;
           hoverInterval = setInterval(()=>{
             i = (i+1) % frames.length;
-            paintFrame(hoverLayer, frames[i]);
-          }, 900);
+            const incoming = frontIsA ? hfB : hfA;
+            const outgoing = frontIsA ? hfA : hfB;
+            paintFrame(incoming, frames[i]);
+            incoming.classList.add('active');
+            outgoing.classList.remove('active');
+            frontIsA = !frontIsA;
+          }, 5000); // calm, slow crossfade — 5s per image
         } else {
           // no numbered frames yet — fall back to the little color-cycle effect
           let i = 0;
@@ -1369,6 +1385,8 @@
         clearInterval(hoverInterval); hoverInterval = null;
         clearInterval(colorCycle); colorCycle = null;
         hoverLayer.style.opacity = '0';
+        hfA.classList.remove('active');
+        hfB.classList.remove('active');
         card.style.setProperty('--g1', g1);
         card.style.setProperty('--g2', g2);
       });
@@ -1484,31 +1502,42 @@
   const lightboxCaption = document.getElementById('lightboxCaption');
   let lightboxSlideInterval = null;
 
-  function renderLightboxFrame(media, label, key){
-    if(media && media.type === 'image'){
-      lightboxBody.innerHTML = `<img src="${media.url}" alt="${label}">`;
-    } else if(media && media.type === 'video'){
-      lightboxBody.innerHTML = `<video src="${media.url}" autoplay muted loop playsinline></video>`;
+  function renderLightboxFrame(media, label, key, fade){
+    const build = ()=>{
+      if(media && media.type === 'image'){
+        lightboxBody.innerHTML = `<img src="${media.url}" alt="${label}">`;
+      } else if(media && media.type === 'video'){
+        lightboxBody.innerHTML = `<video src="${media.url}" autoplay muted loop playsinline></video>`;
+      } else {
+        const [g1,g2] = randPair();
+        lightboxBody.innerHTML = `<div class="lightbox-placeholder" style="background:linear-gradient(150deg, ${g1}, ${g2});"><span>no file found for "${key}" yet</span></div>`;
+      }
+      requestAnimationFrame(()=> lightboxBody.classList.add('lb-visible'));
+    };
+    if(fade){
+      lightboxBody.classList.remove('lb-visible');
+      setTimeout(build, 600); // let the fade-out finish before swapping content
     } else {
-      const [g1,g2] = randPair();
-      lightboxBody.innerHTML = `<div class="lightbox-placeholder" style="background:linear-gradient(150deg, ${g1}, ${g2});"><span>no file found for "${key}" yet</span></div>`;
+      build();
     }
   }
 
   async function openLightbox(key, label){
     clearInterval(lightboxSlideInterval); lightboxSlideInterval = null;
     lightboxBody.innerHTML = `<div class="lightbox-placeholder"><span>loading...</span></div>`;
+    lightboxBody.classList.add("lb-visible");
     lightboxCaption.textContent = label;
     lightbox.classList.add('show');
     document.body.style.overflow = 'hidden';
     const media = await resolveMedia(key);
-    renderLightboxFrame(media, label, key);
+    renderLightboxFrame(media, label, key, false);
   }
 
-  // opens the lightbox and keeps swiping through gamename_1, gamename_2, ... on a loop, never settling on the static thumbnail
+  // opens the lightbox and keeps swiping through gamename_1, gamename_2, ... on a calm 5s loop, never settling on the static thumbnail
   async function openGameLightbox(g){
     clearInterval(lightboxSlideInterval); lightboxSlideInterval = null;
     lightboxBody.innerHTML = `<div class="lightbox-placeholder"><span>loading...</span></div>`;
+    lightboxBody.classList.add("lb-visible");
     lightboxCaption.textContent = g.name;
     lightbox.classList.add('show');
     document.body.style.overflow = 'hidden';
@@ -1517,15 +1546,15 @@
     if(frames.length === 0){
       // no numbered set exists yet — fall back to just the single base thumbnail, if any
       const base = await resolveMedia(g.key);
-      renderLightboxFrame(base, g.name, g.key);
+      renderLightboxFrame(base, g.name, g.key, false);
       return;
     }
     let i = 0;
-    renderLightboxFrame(frames[i], g.name, g.key);
+    renderLightboxFrame(frames[i], g.name, g.key, false);
     lightboxSlideInterval = setInterval(()=>{
       i = (i+1) % frames.length;
-      renderLightboxFrame(frames[i], g.name, g.key);
-    }, 1800);
+      renderLightboxFrame(frames[i], g.name, g.key, true);
+    }, 5000); // calm, slow swipe — 5s per image
   }
 
   function closeLightbox(){
@@ -1772,18 +1801,40 @@
       barFill.style.width = pct + '%';
       lsCount.textContent = `${done} / ${total} files checked`;
       lsPct.textContent = pct + '%';
-      lsFiles.textContent = `checked: ${key}`;
+      lsFiles.textContent = `loaded: ${key}`;
     }
 
-    const checks = preloadKeys.map(key=>
-      Promise.race([
-        Promise.all([resolveMedia(key), resolveAudio(key)]),
-        new Promise(res=> setTimeout(res, 2500)) // per-file safety timeout
-      ]).then(()=> updateProgress(key))
-    );
+    // actually pulls the full file down (not just a HEAD check) so it's genuinely
+    // sitting in the browser cache, decoded and ready, before we ever reveal the page
+    async function fullyDownload(url, kind){
+      try{
+        if(kind === 'image'){
+          await new Promise((resolve)=>{
+            const img = new Image();
+            img.onload = resolve;
+            img.onerror = resolve;
+            img.src = url;
+          });
+        } else {
+          // audio / video: pull the whole body down so it's cached, then let it go
+          const res = await fetch(url, { cache: 'force-cache' });
+          if(res && res.ok) await res.blob();
+        }
+      }catch(e){ /* missing file — fine, just move on */ }
+    }
 
-    // overall safety timeout so a slow/unreachable host can't strand someone on the loading screen
-    const safety = new Promise(res=> setTimeout(res, 8000));
+    // each key fully resolves AND fully downloads before counting as done — no shortcuts
+    const checks = preloadKeys.map(async key=>{
+      const media = await resolveMedia(key);
+      if(media) await fullyDownload(media.url, media.type);
+      const audioUrl = await resolveAudio(key);
+      if(audioUrl) await fullyDownload(audioUrl, 'audio');
+      updateProgress(key);
+    });
+
+    // last-resort safety net only — if something hangs entirely (dead host, CORS lockup),
+    // don't trap someone on the loading screen forever. Real completion should finish well before this.
+    const safety = new Promise(res=> setTimeout(res, 45000));
 
     Promise.race([Promise.all(checks), safety]).then(()=>{
       barFill.style.width = '100%';

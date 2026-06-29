@@ -6,18 +6,18 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
   :root{
-    --deep: #060c1e;
-    --navy: #0b1530;
-    --navy2: #0e1c3d;
-    --panel: #101f44;
-    --line: #25406f;
+    --deep: #02061f;
+    --navy: #0021a5;
+    --navy2: #1331c4;
+    --panel: #081c8c;
+    --line: #2a45d6;
     --foam: #e8eefc;
-    --foam-dim: #9fb3da;
+    --foam-dim: #aabaef;
     --accent: #ffe14d;
     --accent-dim: #d8c34a;
   }
   *{ box-sizing: border-box; }
-  ::selection{ background: var(--accent); color: #0a1530; }
+  ::selection{ background: var(--accent); color: var(--deep); }
   html{ scrollbar-color: var(--accent-dim) var(--deep); scrollbar-width: thin; }
   ::-webkit-scrollbar{ width:10px; height:10px; }
   ::-webkit-scrollbar-track{ background: var(--deep); }
@@ -251,7 +251,7 @@
   .choose{ font-size:11px; letter-spacing:1px; color: var(--foam-dim); }
   .grid{ display:grid; grid-template-columns: repeat(3, 1fr); gap:0; }
   .room{ border:1px solid var(--line); background: var(--panel); padding:26px 30px; position:relative; min-height:160px; transition: background .25s ease, transform .25s ease; margin:-1px 0 0 -1px; cursor:pointer; }
-  .room:hover{ background: #142b58; transform: translateY(-2px); }
+  .room:hover{ background: #152dc0; transform: translateY(-2px); }
   .room .num{ color: var(--foam-dim); font-size:12px; }
   .room h3{ font-family: Georgia, serif; font-style:italic; font-size:30px; margin:14px 0 10px; color:#fff; }
   .room p{ font-size:13px; color:#cdd8f2; margin:0; }
@@ -303,6 +303,25 @@
   .game-card::before{ content:""; position:absolute; inset:0; z-index:5; pointer-events:none; background: linear-gradient(115deg, transparent 40%, rgba(255,255,255,0.08) 50%, transparent 60%); transform: translateX(-150%); transition: transform .6s ease; }
   .game-card:hover::before{ transform: translateX(150%); }
 
+  .screenshots-cta-wrap{ margin-top:24px; text-align:center; }
+  .screenshots-cta{
+    width:100%; background: var(--panel); border:1px solid var(--line); color: var(--foam);
+    font-family: 'Courier New', monospace; font-size:12px; letter-spacing:1.5px;
+    padding:18px 24px; cursor:pointer; position:relative; overflow:hidden;
+    transition: border-color .25s ease, color .25s ease, transform .15s ease;
+  }
+  .screenshots-cta .sc-icon{ color: var(--accent); margin-right:8px; display:inline-block; transition: transform .3s ease; }
+  .screenshots-cta:hover{ border-color: var(--accent); color: var(--accent); }
+  .screenshots-cta:hover .sc-icon{ transform: translateX(4px); }
+  .screenshots-cta:active{ transform: scale(0.99); }
+  .screenshots-cta::after{
+    content:""; position:absolute; inset:0; z-index:0; pointer-events:none;
+    background: linear-gradient(115deg, transparent 40%, rgba(255,225,77,0.08) 50%, transparent 60%);
+    transform: translateX(-150%); transition: transform .8s ease;
+  }
+  .screenshots-cta:hover::after{ transform: translateX(150%); }
+  .screenshots-note{ margin-top:10px; font-size:11px; color: var(--foam-dim); letter-spacing:.5px; }
+
   .game-detail{ margin-top: 50px; display:grid; grid-template-columns: 1fr 1fr; gap:0; border:1px solid var(--line); }
   .game-detail .panel-cell{ padding:30px 34px; border-right:1px solid var(--line); }
   .game-detail .panel-cell:last-child{ border-right:none; }
@@ -334,7 +353,7 @@
     width:40px; height:40px; border:1px solid var(--accent); border-radius:50%;
     display:flex; align-items:center; justify-content:center; color: var(--accent); font-size:14px;
     z-index:2; opacity:0; transition: opacity .25s ease, transform .25s ease;
-    background: rgba(6,12,30,0.4);
+    background: rgba(2,6,31,0.4);
   }
   .artist-card:hover .play-hint{ opacity:1; transform: translate(-50%,-50%) scale(1); }
   .artist-card.playing{ border-color: var(--accent); box-shadow: 0 0 18px rgba(255,225,77,.35); }
@@ -429,7 +448,7 @@
   }
   .anime-card .vign{
     position:absolute; inset:0; pointer-events:none;
-    background: linear-gradient(180deg, rgba(6,12,30,0.15) 0%, rgba(6,12,30,0.75) 100%), radial-gradient(circle at 50% 100%, transparent 30%, rgba(6,12,30,.5) 100%);
+    background: linear-gradient(180deg, rgba(2,6,31,0.15) 0%, rgba(2,6,31,0.75) 100%), radial-gradient(circle at 50% 100%, transparent 30%, rgba(2,6,31,.5) 100%);
   }
   /* rising bubbles inside each card */
   .anime-card .abubble{
@@ -450,7 +469,7 @@
     position:absolute; top:14px; right:16px; z-index:3;
     font-size:10px; letter-spacing:1.5px; color: var(--accent);
     border:1px solid var(--accent); border-radius:20px; padding:3px 12px;
-    background: rgba(6,12,30,0.4);
+    background: rgba(2,6,31,0.4);
     transition: transform .3s ease, box-shadow .3s ease;
   }
   .anime-card:hover .badge{ box-shadow: 0 0 14px rgba(255,225,77,0.5); transform: translateY(-1px); }
@@ -494,7 +513,7 @@
   }
   .about-id .id-photo{
     width:100%; aspect-ratio:1/1; border:1px dashed var(--line);
-    background: linear-gradient(150deg, #1d3a6e, #0c1530);
+    background: linear-gradient(150deg, #1331c4, #02061f);
     display:flex; align-items:center; justify-content:center;
     font-size:34px; color: var(--accent); margin-bottom:14px;
     position:relative; z-index:1;
@@ -667,7 +686,7 @@
     .art-grid, .game-grid, .anime-grid{ grid-template-columns: repeat(2,1fr); }
   }  /* ===== LIGHTBOX ===== */
   .lightbox{
-    position:fixed; inset:0; z-index:100; background: rgba(3,6,16,0.92);
+    position:fixed; inset:0; z-index:100; background: rgba(2,6,31,0.92);
     display:none; align-items:center; justify-content:center; padding:60px 30px;
     backdrop-filter: blur(3px);
   }
@@ -888,9 +907,16 @@
 <section class="page" id="view-gaming">
   <div class="page-header">
     <h2>gaming<span style="color:var(--accent)">*</span></h2>
-    <span class="sub">/gaming — hover a tile, it'll show you more</span>
+    <span class="sub">/gaming — just the highlights, no data hogging</span>
   </div>
   <div class="game-grid" id="gameGrid"></div>
+
+  <div class="screenshots-cta-wrap">
+    <button class="screenshots-cta" id="screenshotsBtn">
+      <span class="sc-icon">▸</span> CLICK HERE TO CHECK OUT ALL MY SCREENSHOTS THROUGHOUT THE YEARS
+    </button>
+    <div class="screenshots-note" id="screenshotsNote">kept off this site on purpose — full gallery lives elsewhere so nobody's data gets wasted just loading thumbnails.</div>
+  </div>
 
   <div class="game-detail">
     <div class="panel-cell">
@@ -1231,10 +1257,10 @@
   }
 
   const palette = [
-    ['#1d3a6e','#0c1530'], ['#2a4f8f','#10204a'], ['#3a2f6e','#140e2e'],
-    ['#0e3a4f','#091a26'], ['#4a2f4f','#1a0e1a'], ['#2f4f3a','#0e1a14'],
-    ['#5a3a2f','#1a0e09'], ['#2f3a5a','#0e1226'], ['#3a5a4f','#0e1a16'],
-    ['#5a2f4a','#1a0e16']
+    ['#1331c4','#02061f'], ['#2740d6','#060f3d'], ['#0021a5','#020616'],
+    ['#3a4fe0','#0a1450'], ['#1b2bb0','#04081f'], ['#2e3fc9','#070d33'],
+    ['#1a26a0','#03051a'], ['#324bd9','#080f3f'], ['#0f1e8f','#02051c'],
+    ['#283ecb','#06103d']
   ];
   function randPair(){ return palette[Math.floor(Math.random()*palette.length)]; }
 
@@ -1290,10 +1316,6 @@
       card.style.setProperty('--g2', g2);
       card.innerHTML = `
         <div class="layer base" data-img-key="${g.key}"></div>
-        <div class="layer hoverlayer">
-          <div class="hf hf-a"></div>
-          <div class="hf hf-b"></div>
-        </div>
         <div class="scan"></div>
         <div class="vign"></div>
         <span class="tag-corner">${g.tag}</span>
@@ -1302,67 +1324,30 @@
           <div class="blurb">${g.blurb}</div>
         </div>
       `;
-      const hoverLayer = card.querySelector('.hoverlayer');
-      const hfA = card.querySelector('.hf-a');
-      const hfB = card.querySelector('.hf-b');
-
-      function paintFrame(el, media){
-        if(!media) return;
-        if(media.type === 'image'){
-          el.style.backgroundImage = `url('${media.url}')`;
-        } else {
-          el.style.backgroundImage = `url('')`;
-          // videos in the crossfade slot just sit as a poster-less still via CSS bg fallback;
-          // actual video playback still happens in the lightbox slideshow
-        }
-      }
-
-      let hoverInterval = null;
-      let colorCycle = null;
-      let frontIsA = true;
-
-      card.addEventListener('mouseenter', async ()=>{
-        const frames = await resolveSequence(g.key);
-        if(frames.length > 0){
-          let i = 0;
-          hoverLayer.style.opacity = '1';
-          paintFrame(hfA, frames[i]);
-          hfA.classList.add('active');
-          frontIsA = true;
-          hoverInterval = setInterval(()=>{
-            i = (i+1) % frames.length;
-            const incoming = frontIsA ? hfB : hfA;
-            const outgoing = frontIsA ? hfA : hfB;
-            paintFrame(incoming, frames[i]);
-            incoming.classList.add('active');
-            outgoing.classList.remove('active');
-            frontIsA = !frontIsA;
-          }, 5000); // calm, slow crossfade — 5s per image
-        } else {
-          // no numbered frames yet — fall back to the little color-cycle effect
-          let i = 0;
-          const alts = [randPair(), randPair(), randPair()];
-          colorCycle = setInterval(()=>{
-            const [a1,a2] = alts[i % alts.length];
-            card.style.setProperty('--g1', a1);
-            card.style.setProperty('--g2', a2);
-            i++;
-          }, 700);
-        }
-      });
-      card.addEventListener('mouseleave', ()=>{
-        clearInterval(hoverInterval); hoverInterval = null;
-        clearInterval(colorCycle); colorCycle = null;
-        hoverLayer.style.opacity = '0';
-        hfA.classList.remove('active');
-        hfB.classList.remove('active');
-        card.style.setProperty('--g1', g1);
-        card.style.setProperty('--g2', g2);
-      });
-      card.addEventListener('click', ()=> openGameLightbox(g));
+      card.addEventListener('click', ()=> openLightbox(g.key, g.name));
       grid.appendChild(card);
     });
     applyResolvedMedia();
+  }
+
+  // fill this in once the dedicated screenshots site exists — for now the button
+  // just lets people know more is coming, without loading a single extra byte
+  const SCREENSHOTS_GALLERY_URL = "";
+  const screenshotsBtn = document.getElementById('screenshotsBtn');
+  if(screenshotsBtn){
+    screenshotsBtn.addEventListener('click', ()=>{
+      if(SCREENSHOTS_GALLERY_URL){
+        window.open(SCREENSHOTS_GALLERY_URL, '_blank');
+      } else {
+        const note = document.getElementById('screenshotsNote');
+        note.textContent = "still building that gallery — check back soon.";
+        note.style.color = 'var(--accent)';
+        setTimeout(()=>{
+          note.textContent = "kept off this site on purpose — full gallery lives elsewhere so nobody's data gets wasted just loading thumbnails.";
+          note.style.color = '';
+        }, 2600);
+      }
+    });
   }
 
   /* ============================================================

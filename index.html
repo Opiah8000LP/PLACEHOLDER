@@ -1435,7 +1435,7 @@
 
   // finds basekey_1, basekey_2, basekey_3... for as long as they exist (no fixed limit, just a sane safety cap)
   const sequenceCache = {};
-  async function resolveSequence(baseKey, cap = 50){
+  async function resolveSequence(baseKey, cap = 20){
     const cacheKey = baseKey.toLowerCase();
     if(sequenceCache[cacheKey]) return sequenceCache[cacheKey];
     const frames = [];

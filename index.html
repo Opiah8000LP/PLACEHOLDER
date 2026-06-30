@@ -1392,7 +1392,7 @@
   async function resolveMedia(basename){
     const cacheKey = 'media:' + basename.toLowerCase();
     if(resolveCache[cacheKey] !== undefined) return resolveCache[cacheKey];
-    const imgExts = ['jpg','jpeg','png','webp','gif'];
+    const imgExts = ['avif','jpg','jpeg','png','webp','gif'];
     const vidExts = ['mp4','webm','mov'];
     for(const ext of imgExts){
       const url = MEDIA_ROOT + basename + '.' + ext;
@@ -1409,7 +1409,7 @@
   async function resolveAudio(basename){
     const cacheKey = 'audio:' + basename.toLowerCase();
     if(resolveCache[cacheKey] !== undefined) return resolveCache[cacheKey];
-    const exts = ['mp3','wav','ogg','m4a'];
+    const exts = ['mp3','opus','wav','ogg','m4a'];
     for(const ext of exts){
       const url = MEDIA_ROOT + basename + '.' + ext;
       if(await probeMediaTag(url, 'audio')){ resolveCache[cacheKey] = url; return url; }

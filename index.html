@@ -44,7 +44,7 @@
   .ls-mark{
     font-family: Georgia, serif; font-style:italic; font-size:34px; color:#fff; margin-bottom:6px;
   }
-  .ls-mark .star{ color: var(--accent); display:inline-block; animation: spin 4s linear infinite; }
+  .ls-mark .star{ color: var(--accent); display:inline-block; }
   .ls-sub{ font-size:11px; letter-spacing:1.5px; color: var(--foam-dim); margin-bottom:34px; }
   .ls-sonar{
     width:80px; height:80px; margin:0 auto 28px; position:relative;
@@ -325,7 +325,7 @@
   .game-detail{ margin-top: 50px; display:grid; grid-template-columns: 1fr 1fr; gap:0; border:1px solid var(--line); }
   .game-detail .panel-cell{ padding:30px 34px; border-right:1px solid var(--line); }
   .game-detail .panel-cell:last-child{ border-right:none; }
-  .game-detail .tagline{ font-size:11px; letter-spacing:2px; color:#e76b6b; margin-bottom:14px; }
+  .game-detail .tagline{ font-size:11px; letter-spacing:2px; color: var(--accent); margin-bottom:14px; }
   .game-detail .quote{ font-family: Georgia, serif; font-style:italic; font-size:18px; line-height:1.7; color:#dfe6f7; }
   @media (max-width: 900px){ .game-grid{ grid-template-columns: repeat(2,1fr); } .game-detail{ grid-template-columns: 1fr; } .game-detail .panel-cell{ border-right:none; border-bottom:1px solid var(--line); } }
 
@@ -1048,7 +1048,7 @@
     <div class="quirk-list">
       <div class="quirk-row"><span class="q-num">→</span><span>Low = underrated, overlooked.</span></div>
       <div class="quirk-row"><span class="q-num">→</span><span>Index = in programming, indexes are how you locate things. I'm the pointer, not the destination.</span></div>
-      <div class="quirk-row"><span class="q-num">=</span><span>It's a footnote. There's additional information, but you don't get to read it.</span></div>
+      <div class="quirk-row"><span class="q-num">→</span><span>* = it's a footnote. There's additional information, but you don't get to read it.</span></div>
     </div>
   </div>
 
@@ -1300,7 +1300,7 @@
     { name:"Terraria", blurb:"dig forever.", tag:"500h", key:"terraria" },
     { name:"Roblox", blurb:"never really left, just stopped admitting it out loud.", tag:"CHILDHOOD", key:"roblox" },
     { name:"Fortnite", blurb:"don't judge me, the building mechanic is actually kind of insane.", tag:"BUILD FIGHT", key:"fortnite" },
-    { name:"Random", blurb:"whatever I downloaded at 2am and forgot to delete.", tag:"UNSORTED", key:"random" },
+    { name:"Just Cause 2", blurb:"strap a guy to a jet and call it transportation. chaos, but make it fun.", tag:"CHAOS", key:"just_cause_2" },
     { name:"Elden Ring", blurb:"16h boss fights.", tag:"PAIN", key:"elden_ring" }
   ];
   let gamingInit = false;

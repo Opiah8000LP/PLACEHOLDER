@@ -1351,119 +1351,73 @@
   }
 
   /* ============================================================
-     LOCAL MEDIA RESOLVER
-     Everything (images, video, audio) lives in the SAME folder as
-     this index.html file. To use a placeholder name like
-     "placeholder_track_1", just drop a file named
-     "placeholder_track_1.mp3" (or .png, .mp4, etc) right next to
-     this html file — no config, no folder structure needed.
+     FILE MANIFEST — list every media file you have here.
+     Exact filenames with extension, one per line.
+     No probing, no 404s, no console spam.
+  ============================================================ */
+  const USER_FILES = [
+    // "aboutme.png",
+    // "ui_click.mp3",
+    // "surf_curse.mp3",
+    // "surf_curse.avif",
+    // "minecraft.jpg",
+    // "placeholder_track_1.mp3",
+    // ... add yours here
+  ];
+
+  /* ============================================================
+     RESOLVER — manifest-only, instant, zero network requests
   ============================================================ */
   const MEDIA_ROOT = './';
-  const resolveCache = {}; // basename(lowercased) -> {url,type}|url|null
+  const IMG_EXTS  = new Set(['avif','jpg','jpeg','png','webp','gif']);
+  const VID_EXTS  = new Set(['mp4','webm','mov']);
+  const AUD_EXTS  = new Set(['mp3','opus','wav','ogg','m4a']);
 
-  // probes using actual media elements instead of fetch() — fetch() is blocked
-  // from reading local files when this page is opened as file:// (double-clicked
-  // instead of hosted), but <img>/<audio>/<video> elements load local files fine.
-  // this makes file checks work identically whether you're testing locally or
-  // it's actually hosted somewhere.
-  function probeImage(url){
-    return new Promise(resolve=>{
-      const img = new Image();
-      img.onload = ()=> resolve(true);
-      img.onerror = ()=> resolve(false);
-      img.src = url;
-    });
+  const manifestMap = {};
+  USER_FILES.forEach(filename=>{
+    const dot = filename.lastIndexOf('.');
+    if(dot === -1) return;
+    const base = filename.slice(0, dot).toLowerCase();
+    const ext  = filename.slice(dot+1).toLowerCase();
+    if(IMG_EXTS.has(ext) && !manifestMap[base])
+      manifestMap[base] = { url: MEDIA_ROOT + filename, type:'image' };
+    else if(VID_EXTS.has(ext) && !manifestMap[base])
+      manifestMap[base] = { url: MEDIA_ROOT + filename, type:'video' };
+    else if(AUD_EXTS.has(ext) && !manifestMap['audio:'+base])
+      manifestMap['audio:'+base] = MEDIA_ROOT + filename;
+  });
+
+  function resolveMedia(basename){
+    return manifestMap[basename.toLowerCase()] || null;
   }
-  function probeMediaTag(url, tag){
-    return new Promise(resolve=>{
-      const el = document.createElement(tag);
-      el.preload = 'metadata';
-      let settled = false;
-      const finish = (ok)=>{ if(settled) return; settled = true; el.src = ''; resolve(ok); };
-      el.onloadedmetadata = ()=> finish(true);
-      el.oncanplay = ()=> finish(true);
-      el.onerror = ()=> finish(false);
-      el.src = url;
-      // some browsers never fire an event for a missing local file — give it a moment, then give up
-      setTimeout(()=> finish(false), 4000);
-    });
+  function resolveAudio(basename){
+    return manifestMap['audio:'+basename.toLowerCase()] || null;
   }
 
-  async function resolveMedia(basename){
-    const cacheKey = 'media:' + basename.toLowerCase();
-    if(resolveCache[cacheKey] !== undefined) return resolveCache[cacheKey];
-    const imgExts = ['avif','jpg','jpeg','png','webp','gif'];
-    const vidExts = ['mp4','webm','mov'];
-    for(const ext of imgExts){
-      const url = MEDIA_ROOT + basename + '.' + ext;
-      if(await probeImage(url)){ resolveCache[cacheKey] = { url, type:'image' }; return resolveCache[cacheKey]; }
-    }
-    for(const ext of vidExts){
-      const url = MEDIA_ROOT + basename + '.' + ext;
-      if(await probeMediaTag(url, 'video')){ resolveCache[cacheKey] = { url, type:'video' }; return resolveCache[cacheKey]; }
-    }
-    resolveCache[cacheKey] = null;
-    return null;
-  }
-
-  async function resolveAudio(basename){
-    const cacheKey = 'audio:' + basename.toLowerCase();
-    if(resolveCache[cacheKey] !== undefined) return resolveCache[cacheKey];
-    const exts = ['mp3','opus','wav','ogg','m4a'];
-    for(const ext of exts){
-      const url = MEDIA_ROOT + basename + '.' + ext;
-      if(await probeMediaTag(url, 'audio')){ resolveCache[cacheKey] = url; return url; }
-    }
-    resolveCache[cacheKey] = null;
-    return null;
-  }
-
-  // finds basekey_1, basekey_2, basekey_3... for as long as they exist (no fixed limit, just a sane safety cap)
-  const sequenceCache = {};
-  async function resolveSequence(baseKey, cap = 20){
-    const cacheKey = baseKey.toLowerCase();
-    if(sequenceCache[cacheKey]) return sequenceCache[cacheKey];
-    const frames = [];
-    for(let i=1; i<=cap; i++){
-      const media = await resolveMedia(`${baseKey}_${i}`);
-      if(!media) break;
-      frames.push(media);
-    }
-    sequenceCache[cacheKey] = frames;
-    return frames;
-  }
-
-  async function applyResolvedMedia(){
-    // backgrounds for artist/album/anime/game/about cards if a matching image or video exists
-    const imgEls = document.querySelectorAll('[data-img-key]');
-    for(const el of imgEls){
-      if(el.dataset.resolvedUrl) continue;
-      const media = await resolveMedia(el.dataset.imgKey);
-      if(!media) continue;
-      el.dataset.resolvedUrl = media.url;
-      el.dataset.resolvedType = media.type;
+  function applyResolvedMedia(){
+    document.querySelectorAll('[data-img-key]').forEach(el=>{
+      const media = resolveMedia(el.dataset.imgKey);
+      if(!media) return;
       if(media.type === 'image'){
-        el.style.backgroundImage = `url('${media.url}')`;
-        el.style.backgroundSize = 'cover';
+        el.style.backgroundImage    = `url('${media.url}')`;
+        el.style.backgroundSize     = 'cover';
         el.style.backgroundPosition = 'center';
         el.style.opacity = '1';
-        const fallback = el.querySelector('.id-photo-fallback');
-        if(fallback) fallback.style.display = 'none';
+        const fb = el.querySelector('.id-photo-fallback');
+        if(fb) fb.style.display = 'none';
       } else {
-        el.innerHTML = `<video src="${media.url}" autoplay muted loop playsinline style="width:100%; height:100%; object-fit:cover; display:block;"></video>`;
+        el.innerHTML = `<video src="${media.url}" autoplay muted loop playsinline style="width:100%;height:100%;object-fit:cover;display:block;"></video>`;
         el.style.opacity = '1';
       }
-    }
-    // mark playable list items if a matching audio file exists
-    const audioEls = document.querySelectorAll('[data-audio-key]');
-    for(const el of audioEls){
-      if(el.classList.contains('playable')) continue;
-      const url = await resolveAudio(el.dataset.audioKey);
-      if(url){
-        el.classList.add('playable');
-        el.dataset.audioUrl = url;
-      }
-    }
+    });
+    document.querySelectorAll('[data-audio-key]').forEach(el=>{
+      const url = resolveAudio(el.dataset.audioKey);
+      if(url){ el.classList.add('playable'); el.dataset.audioUrl = url; }
+    });
+    document.querySelectorAll('.artist-card[data-audio-key]').forEach(card=>{
+      const url = resolveAudio(card.dataset.audioKey);
+      if(url) card.dataset.audioUrl = url;
+    });
   }
 
   /* ===== LIGHTBOX — full art piece / game image viewer ===== */
@@ -1501,30 +1455,6 @@
     document.body.style.overflow = 'hidden';
     const media = await resolveMedia(key);
     renderLightboxFrame(media, label, key, false);
-  }
-
-  // opens the lightbox and keeps swiping through gamename_1, gamename_2, ... on a calm 5s loop, never settling on the static thumbnail
-  async function openGameLightbox(g){
-    clearInterval(lightboxSlideInterval); lightboxSlideInterval = null;
-    lightboxBody.innerHTML = `<div class="lightbox-placeholder"><span>loading...</span></div>`;
-    lightboxBody.classList.add("lb-visible");
-    lightboxCaption.textContent = g.name;
-    lightbox.classList.add('show');
-    document.body.style.overflow = 'hidden';
-
-    const frames = await resolveSequence(g.key);
-    if(frames.length === 0){
-      // no numbered set exists yet — fall back to just the single base thumbnail, if any
-      const base = await resolveMedia(g.key);
-      renderLightboxFrame(base, g.name, g.key, false);
-      return;
-    }
-    let i = 0;
-    renderLightboxFrame(frames[i], g.name, g.key, false);
-    lightboxSlideInterval = setInterval(()=>{
-      i = (i+1) % frames.length;
-      renderLightboxFrame(frames[i], g.name, g.key, true);
-    }, 5000); // calm, slow swipe — 5s per image
   }
 
   function closeLightbox(){
@@ -1729,7 +1659,7 @@
   showPage('home');
   applyResolvedMedia();
 
-  /* ===== LOADING SCREEN — actually wait for files to be checked ===== */
+  /* ===== LOADING SCREEN — preloads every file listed in USER_FILES ===== */
   (function runPreload(){
     const lsBubbles = document.getElementById('lsBubbles');
     for(let i=0; i<16; i++){
@@ -1745,68 +1675,42 @@
 
     document.body.style.overflow = 'hidden';
 
-    // every basename the site might want, checked up front so it's cached by the time each page renders
-    const preloadKeys = [
-      'aboutme', 'ui_click',
-      ...topArtists.map(a=>a.key),
-      ...albums.map(a=>a.key),
-      ...tracks.map(t=>t.key),
-      ...games.map(g=>g.key),
-      ...animes.map(a=>a.key),
-      ...Array.from({length:12}, (_,i)=> `placeholder_${i+1}`)
-    ];
-
-    const barFill = document.getElementById('lsBarFill');
-    const lsCount = document.getElementById('lsCount');
-    const lsPct = document.getElementById('lsPct');
-    const lsFiles = document.getElementById('lsFiles');
+    const barFill    = document.getElementById('lsBarFill');
+    const lsCount    = document.getElementById('lsCount');
+    const lsPct      = document.getElementById('lsPct');
+    const lsFiles    = document.getElementById('lsFiles');
     const loadScreen = document.getElementById('loadScreen');
 
+    // collect every URL from the manifest — only real listed files, no probing
+    const urlsToLoad = Object.values(manifestMap).map(v=> typeof v === 'string' ? v : v.url);
+    const total = urlsToLoad.length;
     let done = 0;
-    const total = preloadKeys.length;
 
-    function updateProgress(key){
+    if(total === 0){
+      // nothing listed yet — just show a quick count-up and reveal
+      let t = 0;
+      const fake = setInterval(()=>{
+        t = Math.min(t + 8, 100);
+        barFill.style.width = t + '%';
+        lsPct.textContent = t + '%';
+        lsCount.textContent = 'no files listed yet';
+        lsFiles.textContent = 'add files to USER_FILES to preload them';
+        if(t >= 100){ clearInterval(fake); reveal(); }
+      }, 40);
+      return;
+    }
+
+    function tick(filename){
       done++;
       const pct = Math.round((done/total)*100);
       barFill.style.width = pct + '%';
-      lsCount.textContent = `${done} / ${total} files checked`;
+      lsCount.textContent = `${done} / ${total} files`;
       lsPct.textContent = pct + '%';
-      lsFiles.textContent = `loaded: ${key}`;
+      lsFiles.textContent = filename;
+      if(done >= total) reveal();
     }
 
-    // actually pulls the full file down (not just a HEAD check) so it's genuinely
-    // sitting in the browser cache, decoded and ready, before we ever reveal the page
-    async function fullyDownload(url, kind){
-      try{
-        if(kind === 'image'){
-          await new Promise((resolve)=>{
-            const img = new Image();
-            img.onload = resolve;
-            img.onerror = resolve;
-            img.src = url;
-          });
-        } else {
-          // audio / video: pull the whole body down so it's cached, then let it go
-          const res = await fetch(url, { cache: 'force-cache' });
-          if(res && res.ok) await res.blob();
-        }
-      }catch(e){ /* missing file — fine, just move on */ }
-    }
-
-    // each key fully resolves AND fully downloads before counting as done — no shortcuts
-    const checks = preloadKeys.map(async key=>{
-      const media = await resolveMedia(key);
-      if(media) await fullyDownload(media.url, media.type);
-      const audioUrl = await resolveAudio(key);
-      if(audioUrl) await fullyDownload(audioUrl, 'audio');
-      updateProgress(key);
-    });
-
-    // last-resort safety net only — if something hangs entirely (dead host, CORS lockup),
-    // don't trap someone on the loading screen forever. Real completion should finish well before this.
-    const safety = new Promise(res=> setTimeout(res, 45000));
-
-    Promise.race([Promise.all(checks), safety]).then(()=>{
+    function reveal(){
       barFill.style.width = '100%';
       lsPct.textContent = '100%';
       lsFiles.textContent = 'surfacing...';
@@ -1816,6 +1720,24 @@
         applyResolvedMedia();
         setTimeout(()=> loadScreen.remove(), 700);
       }, 350);
+    }
+
+    // preload images silently with Image(); audio/video with fetch(cache:force-cache)
+    urlsToLoad.forEach(url=>{
+      const ext = url.split('.').pop().toLowerCase();
+      if(IMG_EXTS.has(ext)){
+        const img = new Image();
+        img.onload  = ()=> tick(url.split('/').pop());
+        img.onerror = ()=> tick(url.split('/').pop());
+        img.src = url;
+      } else if(AUD_EXTS.has(ext) || VID_EXTS.has(ext)){
+        fetch(url, { cache:'force-cache' })
+          .then(r=>{ if(r.ok) return r.blob(); })
+          .catch(()=>{})
+          .finally(()=> tick(url.split('/').pop()));
+      } else {
+        tick(url.split('/').pop());
+      }
     });
   })();
 </script>

@@ -1206,9 +1206,9 @@
 
   /* tiny UI click sfx on interactive elements — drop ui_click.mp3 in the same folder as this html file */
   const UI_CLICK_SELECTOR = 'a, .back-btn, .room, .game-card, .art-card, .anime-card, .artist-card, .contact-row, .lightbox-close, .logo, .stat-list li.playable';
-  document.addEventListener('mousedown', async (e)=>{
+  document.addEventListener('mousedown', (e)=>{
     if(!e.target.closest(UI_CLICK_SELECTOR)) return;
-    const url = await resolveAudio('ui_click');
+    const url = getAudio('ui_click');
     if(!url) return;
     const sfx = new Audio(url);
     sfx.volume = 0.22;
@@ -1351,123 +1351,165 @@
   }
 
   /* ============================================================
-     FILE MANIFEST — list every media file you have here.
-     Exact filenames with extension, one per line.
-     No probing, no 404s, no console spam.
+     FILE MANIFEST
+     List every media file that lives next to index.html here.
+     Exact filename + extension. That's it. No probing, no 404s.
+
+     Examples:
+       "surf_curse.opus"
+       "surf_curse.avif"
+       "aboutme.png"
+       "ui_click.mp3"
+       "minecraft.jpg"
+       "placeholder_track_1.mp3"
   ============================================================ */
   const USER_FILES = [
-    // "aboutme.png",
-    // "ui_click.mp3",
-    // "surf_curse.mp3",
+    // paste your filenames here, e.g:
+    // "surf_curse.opus",
     // "surf_curse.avif",
-    // "minecraft.jpg",
-    // "placeholder_track_1.mp3",
-    // ... add yours here
+    // "ui_click.mp3",
+    // "aboutme.png",
   ];
 
   /* ============================================================
-     RESOLVER — manifest-only, instant, zero network requests
+     RESOLVER
+     Builds a lookup table from USER_FILES. Resolves any basename
+     ("surf_curse") to its URL and media type in O(1) with no
+     network requests whatsoever.
   ============================================================ */
-  const MEDIA_ROOT = './';
-  const IMG_EXTS  = new Set(['avif','jpg','jpeg','png','webp','gif']);
-  const VID_EXTS  = new Set(['mp4','webm','mov']);
-  const AUD_EXTS  = new Set(['mp3','opus','wav','ogg','m4a']);
+  const ROOT = './';
+  const IMG_EXTS = new Set(['avif','jpg','jpeg','png','webp','gif']);
+  const VID_EXTS = new Set(['mp4','webm','mov']);
+  const AUD_EXTS = new Set(['mp3','opus','wav','ogg','m4a']);
 
-  const manifestMap = {};
-  USER_FILES.forEach(filename=>{
+  // Two maps: one for visual media, one for audio
+  // Key: lowercase basename without extension
+  const _imgMap = {};  // basename -> { url, type: 'image'|'video' }
+  const _audMap = {};  // basename -> url string
+
+  USER_FILES.forEach(filename => {
     const dot = filename.lastIndexOf('.');
-    if(dot === -1) return;
+    if (dot === -1) return;
     const base = filename.slice(0, dot).toLowerCase();
-    const ext  = filename.slice(dot+1).toLowerCase();
-    if(IMG_EXTS.has(ext) && !manifestMap[base])
-      manifestMap[base] = { url: MEDIA_ROOT + filename, type:'image' };
-    else if(VID_EXTS.has(ext) && !manifestMap[base])
-      manifestMap[base] = { url: MEDIA_ROOT + filename, type:'video' };
-    else if(AUD_EXTS.has(ext) && !manifestMap['audio:'+base])
-      manifestMap['audio:'+base] = MEDIA_ROOT + filename;
+    const ext  = filename.slice(dot + 1).toLowerCase();
+    const url  = ROOT + filename;
+    if (IMG_EXTS.has(ext) && !_imgMap[base]) _imgMap[base] = { url, type: 'image' };
+    else if (VID_EXTS.has(ext) && !_imgMap[base]) _imgMap[base] = { url, type: 'video' };
+    else if (AUD_EXTS.has(ext) && !_audMap[base]) _audMap[base] = url;
   });
 
-  function resolveMedia(basename){
-    return manifestMap[basename.toLowerCase()] || null;
-  }
-  function resolveAudio(basename){
-    return manifestMap['audio:'+basename.toLowerCase()] || null;
+  // Returns { url, type } for visual media, or null
+  function getMedia(basename) {
+    return _imgMap[basename.toLowerCase()] || null;
   }
 
-  function applyResolvedMedia(){
-    document.querySelectorAll('[data-img-key]').forEach(el=>{
-      const media = resolveMedia(el.dataset.imgKey);
-      if(!media) return;
-      if(media.type === 'image'){
+  // Returns URL string for audio, or null
+  function getAudio(basename) {
+    return _audMap[basename.toLowerCase()] || null;
+  }
+
+  // Returns all files in USER_FILES as { url, type } for preloading
+  function getAllFiles() {
+    const files = [];
+    Object.values(_imgMap).forEach(m => files.push(m));
+    Object.values(_audMap).forEach(url => files.push({ url, type: 'audio' }));
+    return files;
+  }
+
+  /* ============================================================
+     APPLY MEDIA
+     Walks the DOM and wires up resolved media. Safe to call
+     multiple times — skips elements that are already applied.
+  ============================================================ */
+  function applyResolvedMedia() {
+    // Visual cards (game thumbnails, anime cards, artist covers, art cards, about photo)
+    document.querySelectorAll('[data-img-key]').forEach(el => {
+      if (el.dataset.mediaApplied) return;
+      const media = getMedia(el.dataset.imgKey);
+      if (!media) return;
+      el.dataset.mediaApplied = '1';
+      if (media.type === 'image') {
         el.style.backgroundImage    = `url('${media.url}')`;
         el.style.backgroundSize     = 'cover';
         el.style.backgroundPosition = 'center';
         el.style.opacity = '1';
         const fb = el.querySelector('.id-photo-fallback');
-        if(fb) fb.style.display = 'none';
+        if (fb) fb.style.display = 'none';
       } else {
         el.innerHTML = `<video src="${media.url}" autoplay muted loop playsinline style="width:100%;height:100%;object-fit:cover;display:block;"></video>`;
         el.style.opacity = '1';
       }
     });
-    document.querySelectorAll('[data-audio-key]').forEach(el=>{
-      const url = resolveAudio(el.dataset.audioKey);
-      if(url){ el.classList.add('playable'); el.dataset.audioUrl = url; }
+
+    // Audio list rows (tracks, albums)
+    document.querySelectorAll('[data-audio-key]').forEach(el => {
+      if (el.dataset.audioApplied) return;
+      const url = getAudio(el.dataset.audioKey);
+      if (!url) return;
+      el.dataset.audioApplied = '1';
+      el.dataset.audioUrl = url;
+      el.classList.add('playable');
     });
-    document.querySelectorAll('.artist-card[data-audio-key]').forEach(card=>{
-      const url = resolveAudio(card.dataset.audioKey);
-      if(url) card.dataset.audioUrl = url;
+
+    // Artist cards (can have both an image AND a playable song)
+    document.querySelectorAll('.artist-card[data-audio-key]').forEach(card => {
+      if (card.dataset.audioApplied) return;
+      const url = getAudio(card.dataset.audioKey);
+      if (!url) return;
+      card.dataset.audioApplied = '1';
+      card.dataset.audioUrl = url;
     });
   }
 
-  /* ===== LIGHTBOX — full art piece / game image viewer ===== */
-  const lightbox = document.getElementById('lightbox');
-  const lightboxBody = document.getElementById('lightboxBody');
+  /* ===== LIGHTBOX ===== */
+  const lightbox        = document.getElementById('lightbox');
+  const lightboxBody    = document.getElementById('lightboxBody');
   const lightboxCaption = document.getElementById('lightboxCaption');
   let lightboxSlideInterval = null;
 
-  function renderLightboxFrame(media, label, key, fade){
-    const build = ()=>{
-      if(media && media.type === 'image'){
+  function renderLightboxFrame(media, label, key, fade) {
+    const build = () => {
+      if (media && media.type === 'image') {
         lightboxBody.innerHTML = `<img src="${media.url}" alt="${label}">`;
-      } else if(media && media.type === 'video'){
+      } else if (media && media.type === 'video') {
         lightboxBody.innerHTML = `<video src="${media.url}" autoplay muted loop playsinline></video>`;
       } else {
-        const [g1,g2] = randPair();
-        lightboxBody.innerHTML = `<div class="lightbox-placeholder" style="background:linear-gradient(150deg, ${g1}, ${g2});"><span>no file found for "${key}" yet</span></div>`;
+        const [g1, g2] = randPair();
+        lightboxBody.innerHTML = `<div class="lightbox-placeholder" style="background:linear-gradient(150deg,${g1},${g2});"><span>no file found for "${key}"</span></div>`;
       }
-      requestAnimationFrame(()=> lightboxBody.classList.add('lb-visible'));
+      requestAnimationFrame(() => lightboxBody.classList.add('lb-visible'));
     };
-    if(fade){
+    if (fade) {
       lightboxBody.classList.remove('lb-visible');
-      setTimeout(build, 600); // let the fade-out finish before swapping content
+      setTimeout(build, 600);
     } else {
       build();
     }
   }
 
-  async function openLightbox(key, label){
+  function openLightbox(key, label) {
     clearInterval(lightboxSlideInterval); lightboxSlideInterval = null;
-    lightboxBody.innerHTML = `<div class="lightbox-placeholder"><span>loading...</span></div>`;
-    lightboxBody.classList.add("lb-visible");
+    lightboxBody.innerHTML = '';
+    lightboxBody.classList.remove('lb-visible');
     lightboxCaption.textContent = label;
     lightbox.classList.add('show');
     document.body.style.overflow = 'hidden';
-    const media = await resolveMedia(key);
+    const media = getMedia(key);
     renderLightboxFrame(media, label, key, false);
   }
 
-  function closeLightbox(){
+  function closeLightbox() {
     clearInterval(lightboxSlideInterval); lightboxSlideInterval = null;
     lightbox.classList.remove('show');
     lightboxBody.innerHTML = '';
     document.body.style.overflow = '';
   }
-  document.getElementById('lightboxClose').addEventListener('click', closeLightbox);
-  lightbox.addEventListener('click', (e)=>{ if(e.target === lightbox) closeLightbox(); });
-  document.addEventListener('keydown', (e)=>{ if(e.key === 'Escape') closeLightbox(); });
 
-  /* ===== NOW PLAYING BAR ===== */
+  document.getElementById('lightboxClose').addEventListener('click', closeLightbox);
+  lightbox.addEventListener('click', e => { if (e.target === lightbox) closeLightbox(); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeLightbox(); });
+
+    /* ===== NOW PLAYING BAR ===== */
   let currentAudio = null;
   let currentLi = null;
   const npBar = document.getElementById('npBar');
@@ -1682,8 +1724,8 @@
     const loadScreen = document.getElementById('loadScreen');
 
     // collect every URL from the manifest — only real listed files, no probing
-    const urlsToLoad = Object.values(manifestMap).map(v=> typeof v === 'string' ? v : v.url);
-    const total = urlsToLoad.length;
+    const filesToLoad = getAllFiles();
+    const total = filesToLoad.length;
     let done = 0;
 
     if(total === 0){
@@ -1723,20 +1765,18 @@
     }
 
     // preload images silently with Image(); audio/video with fetch(cache:force-cache)
-    urlsToLoad.forEach(url=>{
+    filesToLoad.forEach(({ url, type }) => {
       const ext = url.split('.').pop().toLowerCase();
-      if(IMG_EXTS.has(ext)){
+      if (type === 'image') {
         const img = new Image();
-        img.onload  = ()=> tick(url.split('/').pop());
-        img.onerror = ()=> tick(url.split('/').pop());
+        img.onload  = () => tick(url.split('/').pop());
+        img.onerror = () => tick(url.split('/').pop());
         img.src = url;
-      } else if(AUD_EXTS.has(ext) || VID_EXTS.has(ext)){
-        fetch(url, { cache:'force-cache' })
-          .then(r=>{ if(r.ok) return r.blob(); })
-          .catch(()=>{})
-          .finally(()=> tick(url.split('/').pop()));
       } else {
-        tick(url.split('/').pop());
+        fetch(url, { cache: 'force-cache' })
+          .then(r => { if (r.ok) return r.blob(); })
+          .catch(() => {})
+          .finally(() => tick(url.split('/').pop()));
       }
     });
   })();

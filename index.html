@@ -153,6 +153,16 @@
     100%{ transform: translateY(-110vh) translateX(20px); opacity:0; }
   }
 
+  /* background fish — swim across every now and then, purely decorative, behind all content */
+  .fish-layer{ position:fixed; inset:0; z-index:0; pointer-events:none; overflow:hidden; }
+  .fish{ position:absolute; top:0; left:0; will-change: transform, opacity; }
+  .fish svg{ display:block; overflow:visible; }
+  .fish .tail{ transform-box: fill-box; transform-origin: 100% 50%; animation: tailWag .55s ease-in-out infinite; }
+  @keyframes tailWag{
+    0%, 100%{ transform: rotate(-14deg); }
+    50%{ transform: rotate(14deg); }
+  }
+
   .ticker-top{
     position:relative; z-index:2; white-space:nowrap; overflow:hidden;
     background: var(--deep); border-bottom:1px solid var(--line);
@@ -747,6 +757,7 @@
 
 
 <div class="bubbles" id="bubbles"></div>
+<div class="fish-layer" id="fishLayer"></div>
 <div class="grain"></div>
 <div class="depth-gauge" id="depthGauge">
   <span class="label">0m</span>
@@ -1178,6 +1189,69 @@
     b.style.animationDelay = (Math.random()*20)+'s';
     bubbleField.appendChild(b);
   }
+
+  /* ===== BACKGROUND FISH — swim across every now and then ===== */
+  const fishLayer = document.getElementById('fishLayer');
+  const fishColors = ['#aabaef', '#ffe14d', '#dfe6f7', '#7c93e8', '#d8c34a'];
+
+  function makeFishSVG(color){
+    // simple little fish: body + tail fin + eye, all in currentColor via fill
+    return `
+      <svg viewBox="0 0 60 30" width="60" height="30" fill="${color}" opacity="0.55">
+        <g class="tail">
+          <polygon points="14,15 0,4 0,26" />
+        </g>
+        <ellipse cx="34" cy="15" rx="22" ry="10" />
+        <circle cx="48" cy="12" r="1.6" fill="#02061f" opacity="0.7" />
+      </svg>
+    `;
+  }
+
+  function spawnFish(){
+    const goingRight = Math.random() < 0.5;
+    const size = 26 + Math.random()*46; // px width
+    const aspect = 30/60;
+    const height = size*aspect;
+    const topPct = 6 + Math.random()*82; // keep off the very top/bottom edge
+    const duration = 16000 + Math.random()*16000; // 16s - 32s crossing
+    const color = fishColors[Math.floor(Math.random()*fishColors.length)];
+
+    const fish = document.createElement('div');
+    fish.className = 'fish';
+    fish.style.top = topPct + 'vh';
+    fish.style.width = size + 'px';
+    fish.style.height = height + 'px';
+    fish.innerHTML = makeFishSVG(color);
+    fishLayer.appendChild(fish);
+
+    const vw = window.innerWidth;
+    const startX = goingRight ? -size - 20 : vw + 20;
+    const endX = goingRight ? vw + 20 : -size - 20;
+    const scaleX = goingRight ? 1 : -1; // fish art faces left by default, flip to face right
+    const bob = 14 + Math.random()*22; // gentle vertical drift while swimming
+
+    const anim = fish.animate([
+      { transform: `translateX(${startX}px) translateY(0px) scaleX(${scaleX})`, opacity: 0 },
+      { transform: `translateX(${startX + (endX-startX)*0.12}px) translateY(-${bob}px) scaleX(${scaleX})`, opacity: 0.55, offset: 0.12 },
+      { transform: `translateX(${startX + (endX-startX)*0.5}px) translateY(${bob}px) scaleX(${scaleX})`, opacity: 0.55, offset: 0.5 },
+      { transform: `translateX(${startX + (endX-startX)*0.88}px) translateY(-${bob*0.6}px) scaleX(${scaleX})`, opacity: 0.55, offset: 0.88 },
+      { transform: `translateX(${endX}px) translateY(0px) scaleX(${scaleX})`, opacity: 0 }
+    ], { duration, easing: 'linear', fill: 'forwards' });
+
+    anim.onfinish = () => fish.remove();
+  }
+
+  function scheduleFish(){
+    // a fish drifts by every 5-13 seconds, occasionally two close together
+    const delay = 5000 + Math.random()*8000;
+    setTimeout(()=>{
+      spawnFish();
+      if(Math.random() < 0.25) setTimeout(spawnFish, 1200 + Math.random()*2000);
+      scheduleFish();
+    }, delay);
+  }
+  spawnFish(); // one right away so the effect is visible immediately
+  scheduleFish();
 
   /* depth gauge — fills with scroll position, shown only after a little scrolling */
   const depthGauge = document.getElementById('depthGauge');
